@@ -230,6 +230,38 @@
 </head>
 <body>
 <div id="root"></div>
+<!-- FIREBASE SETUP -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  // Replace with your actual Zephyr Fit Firebase Config
+  const firebaseConfig = {
+
+  apiKey: "AIzaSyAB1mdheOFoDGRGX4I4tPF_BqrCiIGscEE",
+
+  authDomain: "zephyr-fit.firebaseapp.com",
+
+  projectId: "zephyr-fit",
+
+  storageBucket: "zephyr-fit.firebasestorage.app",
+
+  messagingSenderId: "56763663017",
+
+  appId: "1:56763663017:web:537fd4476f96ae34901fb8"
+
+};
+
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Expose the auth functions globally so React can use them
+  window.zephyrAuth = {
+    signIn: (email, password) => signInWithEmailAndPassword(auth, email, password),
+    register: (email, password) => createUserWithEmailAndPassword(auth, email, password)
+  };
+</script>
 
 <script type="text/babel" data-presets="react,env">
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
@@ -338,15 +370,46 @@ function TopNav({ onBack, xp, username, showBack }){
 }
 
 /* ============================= PAGE 1 — LOGIN ============================= */
+/* ============================= PAGE 1 — LOGIN ============================= */
 function LoginPage({ onSubmit }){
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [focusU, setFocusU] = useState(false);
-  const [focusP, setFocusP] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const validU = username.trim().length >= 3;
+  // Validation
+  const validE = email.includes('@');
   const validP = password.length >= 6;
-  const ready = validU && validP;
+  const ready = validE && validP && !loading;
+
+  const handleAuth = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      // 1. Try to sign in first
+      const userCredential = await window.zephyrAuth.signIn(email, password);
+      
+      // Extract the part of the email before the '@' to use as the HUD username
+      const usernameDisplay = userCredential.user.email.split('@')[0];
+      onSubmit(usernameDisplay);
+      
+    } catch (error) {
+      // 2. If the user doesn't exist, automatically register them
+      if(error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+        try {
+          const userCredential = await window.zephyrAuth.register(email, password);
+          const usernameDisplay = userCredential.user.email.split('@')[0];
+          onSubmit(usernameDisplay);
+        } catch (regError) {
+          setErrorMsg(regError.message);
+        }
+      } else {
+        // Display any other errors (e.g., wrong password, rate limit)
+        setErrorMsg(error.message.replace('Firebase: ', ''));
+      }
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="screen">
@@ -357,15 +420,13 @@ function LoginPage({ onSubmit }){
 
         <div className="field">
           <input
-            id="uname"
-            type="text"
-            value={username}
-            onFocus={()=>setFocusU(true)}
-            onBlur={()=>setFocusU(false)}
-            onChange={e=>setUsername(e.target.value)}
-            className={(validU?'valid ':'') + (username?'has-val':'')}
+            id="email"
+            type="email"
+            value={email}
+            onChange={e=>setEmail(e.target.value)}
+            className={(validE?'valid ':'') + (email?'has-val':'')}
           />
-          <label htmlFor="uname">Username or Email</label>
+          <label htmlFor="email">Email Address</label>
           <span className="check">&#10003;</span>
         </div>
 
@@ -374,8 +435,6 @@ function LoginPage({ onSubmit }){
             id="pw"
             type="password"
             value={password}
-            onFocus={()=>setFocusP(true)}
-            onBlur={()=>setFocusP(false)}
             onChange={e=>setPassword(e.target.value)}
             className={(validP?'valid ':'') + (password?'has-val':'')}
           />
@@ -383,10 +442,17 @@ function LoginPage({ onSubmit }){
           <span className="check">&#10003;</span>
         </div>
 
-        <button className="cta-button" disabled={!ready} onClick={()=>onSubmit(username.trim())}>
-          Start Your Journey
+        {/* Error Message Display */}
+        {errorMsg && (
+          <p style={{color: 'var(--red)', fontSize: '13px', textAlign: 'center', marginBottom: '16px'}}>
+            &#9888; {errorMsg}
+          </p>
+        )}
+
+        <button className="cta-button" disabled={!ready} onClick={handleAuth}>
+          {loading ? 'Authenticating...' : 'Start Your Journey'}
         </button>
-        <p className="cta-sub">Username 3+ chars · Password 6+ chars</p>
+        <p className="cta-sub">Valid email required · Password 6+ chars</p>
       </div>
     </div>
   );
