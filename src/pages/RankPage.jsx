@@ -23,7 +23,7 @@ export default function RankPage({ rank, setRank, onNext, onBack, xp, username }
               onClick={() => setRank(r.id)}
             >
               <span className="font-mono text-[11px] text-text-dimmer tracking-[.15em]">{r.tier}</span>
-              <Icon className="w-[46px] h-[46px] my-3.5 mx-auto text-text-dim transition-colors duration-200 active:text-cyan" />
+              <Icon className="w-[46px] h-[46px] my-3.5 mx-auto text-text-dim transition-colors duration-200 active:text-mint" />
               <p className="font-extrabold tracking-[.06em] text-[15px] m-0 mb-1.5">{r.name}</p>
               <p className="text-xs text-text-dim leading-[1.4] m-0">{r.desc}</p>
             </div>

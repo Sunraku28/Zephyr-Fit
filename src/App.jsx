@@ -12,7 +12,6 @@ import CompletePage from './pages/CompletePage';
 export default function App() {
   const {
     stage,
-    wipeClass,
     payload,
     xp,
     setPayload,
@@ -24,7 +23,6 @@ export default function App() {
     goBack,
     finish,
     restart,
-    handleWipeEnd
   } = useOnboarding();
 
   let page;
@@ -45,16 +43,15 @@ export default function App() {
   return (
     <React.Fragment>
       <AmbientBackground />
-      <div className={`wipe-overlay ${wipeClass}`} onTransitionEnd={handleWipeEnd} />
       
-      {/* State Machine + AnimatePresence Page Router */}
+      {/* Smooth fade transition between pages */}
       <AnimatePresence mode="wait">
         <motion.div
           key={stage}
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -15 }}
-          transition={{ duration: 0.35, ease: "easeInOut" }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="w-full z-10 relative"
         >
           {page}

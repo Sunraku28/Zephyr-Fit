@@ -4,7 +4,7 @@ import { JOINTS } from '../data/joints';
 
 function FigureOutline({ cx }) {
   return (
-    <g stroke="rgba(150,170,255,.35)" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <g stroke="rgba(255,255,255,.22)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
       <circle cx={cx} cy={34} r="16"/>
       <line x1={cx} y1={50} x2={cx} y2={70}/>
       <path d={`M${cx-27},96 L${cx-18},70 L${cx+18},70 L${cx+27},96 L${cx+20},205 L${cx-20},205 Z`}/>

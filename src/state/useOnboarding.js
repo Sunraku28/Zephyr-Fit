@@ -5,8 +5,6 @@ export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, map: 400, c
 
 export function useOnboarding() {
   const [stage, setStage] = useState('login');
-  const [pending, setPending] = useState(null);
-  const [wipeClass, setWipeClass] = useState('idle-left');
 
   const [payload, setPayload] = useState({
     account: { username: '' },
@@ -16,21 +14,7 @@ export function useOnboarding() {
   });
 
   const goTo = (next) => {
-    setPending(next);
-    setWipeClass('cover');
-  };
-
-  const handleWipeEnd = () => {
-    if (wipeClass === 'cover') {
-      setStage(pending);
-      setWipeClass('idle-right');
-    } else if (wipeClass === 'idle-right') {
-      setWipeClass('idle-right no-transition');
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        setWipeClass('idle-left no-transition');
-        requestAnimationFrame(() => requestAnimationFrame(() => setWipeClass('idle-left')));
-      }));
-    }
+    setStage(next);
   };
 
   const setStats = (updater) => {
@@ -81,7 +65,6 @@ export function useOnboarding() {
 
   return {
     stage,
-    wipeClass,
     payload,
     xp,
     setPayload,
@@ -93,6 +76,5 @@ export function useOnboarding() {
     goBack,
     finish,
     restart,
-    handleWipeEnd
   };
 }

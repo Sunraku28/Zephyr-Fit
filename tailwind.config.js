@@ -7,34 +7,38 @@ export default {
   theme: {
     extend: {
       colors: {
-        void: '#05070d',
-        'void-2': '#0a0f1e',
-        panel: 'rgba(14,19,33,.58)',
-        'panel-2': 'rgba(14,19,33,.82)',
-        'panel-border': 'rgba(150,170,255,.16)',
-        cyan: {
-          DEFAULT: '#2fe6ff',
-          soft: 'rgba(47,230,255,.35)',
+        void: '#06060b',
+        'void-2': '#0c0c14',
+        panel: 'rgba(255,255,255,.04)',
+        'panel-2': 'rgba(255,255,255,.07)',
+        'panel-border': 'rgba(255,255,255,.10)',
+        mint: {
+          DEFAULT: '#00e89d',
+          soft: 'rgba(0,232,157,.25)',
         },
-        purple: {
-          DEFAULT: '#b24bff',
-          soft: 'rgba(178,75,255,.38)',
+        rose: {
+          DEFAULT: '#ff4d8a',
+          soft: 'rgba(255,77,138,.25)',
+        },
+        gold: {
+          DEFAULT: '#ffc857',
+          soft: 'rgba(255,200,87,.25)',
         },
         orange: '#ff8c3d',
         red: '#ff4d5e',
         green: {
-          DEFAULT: '#35ffa0',
-          soft: 'rgba(53,255,160,.35)',
+          DEFAULT: '#00e89d',
+          soft: 'rgba(0,232,157,.25)',
         },
         text: {
-          DEFAULT: '#eaf0ff',
-          dim: '#8b93ad',
-          dimmer: '#565f78',
+          DEFAULT: '#ebebeb',
+          dim: '#8a8a96',
+          dimmer: '#4e4e5a',
         }
       },
       fontFamily: {
         mono: ['SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace'],
-        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
       }
     },
   },

@@ -6,18 +6,18 @@ export default function CompletePage({ payload, onRestart }) {
   useEffect(() => {
     const end = Date.now() + 2200;
     (function frame() {
-      confetti({ particleCount: 5, angle: 60, spread: 60, origin: { x: 0 }, colors: ['#2fe6ff', '#b24bff', '#ffd23f'] });
-      confetti({ particleCount: 5, angle: 120, spread: 60, origin: { x: 1 }, colors: ['#2fe6ff', '#b24bff', '#ffd23f'] });
+      confetti({ particleCount: 5, angle: 60, spread: 60, origin: { x: 0 }, colors: ['#00e89d', '#ff4d8a', '#ffc857'] });
+      confetti({ particleCount: 5, angle: 120, spread: 60, origin: { x: 1 }, colors: ['#00e89d', '#ff4d8a', '#ffc857'] });
       if (Date.now() < end) requestAnimationFrame(frame);
     })();
-    confetti({ particleCount: 160, spread: 100, origin: { y: .4 }, colors: ['#ffd23f', '#2fe6ff', '#b24bff', '#35ffa0'] });
+    confetti({ particleCount: 160, spread: 100, origin: { y: .4 }, colors: ['#ffc857', '#00e89d', '#ff4d8a', '#00d4ff'] });
   }, []);
 
   return (
     <div className="screen">
       <div className="w-full max-w-[620px] text-center">
         <BioCore size={110} glow="#35ffa0" />
-        <h1 className="text-[clamp(28px,5vw,40px)] font-extrabold tracking-[.02em] bg-gradient-to-r from-green to-cyan bg-clip-text text-transparent my-2.5 mx-0 mb-1">
+        <h1 className="text-[clamp(28px,5vw,40px)] font-extrabold tracking-[-.01em] bg-gradient-to-r from-mint via-[#00d4ff] to-rose bg-clip-text text-transparent my-2.5 mx-0 mb-1">
           Level Initialized
         </h1>
         <p className="text-text-dim text-sm mb-[26px]">Your adaptive plan is compiling. +500 Coins credited.</p>
