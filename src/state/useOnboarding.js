@@ -7,7 +7,7 @@ export function useOnboarding() {
   const [stage, setStage] = useState('login');
 
   const [payload, setPayload] = useState({
-    account: { username: '' },
+    account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
     stats: { age: 21, weightKg: 75, diet: null },
     activityRank: null,
     bodyConstraints: [],
@@ -44,6 +44,13 @@ export function useOnboarding() {
     });
   };
 
+  const setProfileAssets = (pic, frame) => {
+    setPayload(p => ({
+      ...p,
+      account: { ...p.account, profilePic: pic, profileFrame: frame }
+    }));
+  };
+
   const idx = STAGE_ORDER.indexOf(stage);
   const goBack = () => idx > 0 && goTo(STAGE_ORDER[idx - 1]);
   const xp = XP_MAP[stage];
@@ -55,7 +62,7 @@ export function useOnboarding() {
 
   const restart = () => {
     setPayload({
-      account: { username: '' },
+      account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
       stats: { age: 21, weightKg: 75, diet: null },
       activityRank: null,
       bodyConstraints: []
@@ -72,6 +79,7 @@ export function useOnboarding() {
     setDiet,
     setRank,
     toggleJoint,
+    setProfileAssets,
     goTo,
     goBack,
     finish,
