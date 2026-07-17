@@ -64,9 +64,9 @@ export default function VitalsPage({ stats, setStats, onNext, onBack, xp, userna
               <div className="absolute w-[14px] h-full rounded-full gauge-track overflow-hidden">
                 <div className="absolute bottom-0 left-0 w-full transition-[height] duration-100 linear rounded-full" style={{ height: weightPct + '%', background: 'var(--accent-base)', boxShadow: '0 0 18px var(--accent-shadow)' }} />
               </div>
-              <input 
+              <input
                 type="range" min="30" max="180" value={stats.weightKg}
-                onChange={e => setStats(s => ({ ...s, weightKg: +e.target.value }))} 
+                onChange={e => setStats(s => ({ ...s, weightKg: +e.target.value }))}
               />
             </div>
             <div className="text-center">
