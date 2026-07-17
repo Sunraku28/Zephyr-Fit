@@ -2,6 +2,7 @@ import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnboarding } from './state/useOnboarding';
 import AmbientBackground from './components/layout/AmbientBackground';
+import ThemeToggle from './components/ThemeToggle';
 import LoginPage from './pages/LoginPage';
 import VitalsPage from './pages/VitalsPage';
 import FuelPage from './pages/FuelPage';
@@ -43,6 +44,7 @@ export default function App() {
   return (
     <React.Fragment>
       <AmbientBackground />
+      <ThemeToggle />
       
       {/* Smooth fade transition between pages */}
       <AnimatePresence mode="wait">

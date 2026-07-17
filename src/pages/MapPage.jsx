@@ -4,7 +4,7 @@ import { JOINTS } from '../data/joints';
 
 function FigureOutline({ cx }) {
   return (
-    <g stroke="rgba(255,255,255,.22)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <g className="figure-outline" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
       <circle cx={cx} cy={34} r="16"/>
       <line x1={cx} y1={50} x2={cx} y2={70}/>
       <path d={`M${cx-27},96 L${cx-18},70 L${cx+18},70 L${cx+27},96 L${cx+20},205 L${cx-20},205 Z`}/>
@@ -84,7 +84,7 @@ export default function MapPage({ constraints, toggleJoint, onFinish, onBack, xp
         </div>
       </div>
 
-      <button className="map-cta" onClick={onFinish}>Generate Adaptive Plan (+500 Coins)</button>
+      <button className="cta-button max-w-[1040px] mt-[22px]" onClick={onFinish}>Generate Adaptive Plan (+500 Coins)</button>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-export default function BioCore({ size = 120, glow = "#00e89d" }) {
+export default function BioCore({ size = 120, glow = "var(--accent-base)" }) {
   return (
     <div className="biocore relative mx-auto mb-1.5" style={{ width: size, height: size }}>
       <svg viewBox="0 0 120 120" className="w-full h-full">
@@ -11,7 +11,7 @@ export default function BioCore({ size = 120, glow = "#00e89d" }) {
         <g className="ring-outer">
           <polygon points="60,10 100,32 100,78 60,100 20,78 20,32" fill="none" stroke={glow} strokeWidth="1.2" strokeDasharray="6 8" opacity=".45" filter="url(#bioGlow)"/>
         </g>
-        <circle cx="60" cy="60" r="34" fill="none" stroke="#ff4d8a" strokeWidth="1" opacity=".3"/>
+        <circle cx="60" cy="60" r="34" fill="none" stroke={glow} strokeWidth="1" opacity=".3"/>
         <g className="ring-inner">
           <circle cx="60" cy="60" r="24" fill="none" stroke={glow} strokeWidth="1.5" strokeDasharray="4 10" filter="url(#bioGlow)"/>
         </g>

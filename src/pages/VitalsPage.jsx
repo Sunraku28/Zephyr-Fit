@@ -39,11 +39,11 @@ export default function VitalsPage({ stats, setStats, onNext, onBack, xp, userna
       <div className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-[22px] w-full max-w-[760px]">
         <div className="glass p-[26px] relative">
           <p className="font-mono text-[11.5px] tracking-[.18em] uppercase text-text-dim m-0 mb-[18px] text-center">Age</p>
-          <div className="text-center font-mono text-[44px] font-bold text-mint mb-1.5" style={{textShadow: '0 0 25px rgba(0,232,157,.35)'}}>
+          <div className="text-center font-mono text-[44px] font-bold mb-1.5" style={{ color: 'var(--accent-base)', textShadow: '0 0 25px var(--accent-shadow)' }}>
             {stats.age}<span className="text-sm text-text-dim ml-1.5">YRS</span>
           </div>
           <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-mint to-transparent -translate-x-1/2 opacity-40 pointer-events-none" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 opacity-40 pointer-events-none" style={{ background: 'linear-gradient(to bottom, var(--accent-base), transparent)' }} />
             <div className="age-scroller" ref={scrollerRef} onScroll={handleScroll}>
               {ages.map(a => (
                 <div key={a} className={"age-item" + (a === stats.age ? ' center' : '')}>{a}</div>
@@ -61,8 +61,8 @@ export default function VitalsPage({ stats, setStats, onNext, onBack, xp, userna
           <div className="flex items-center justify-center gap-[22px]">
             <div className="flex flex-col justify-between h-[230px] font-mono text-[10px] text-text-dimmer"><span>180</span><span>105</span><span>30</span></div>
             <div className="vgauge-wrap w-[54px] h-[230px] relative flex items-center justify-center">
-              <div className="absolute w-[14px] h-full rounded-full bg-white/5 border border-panel-border overflow-hidden">
-                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-b from-mint to-rose shadow-[0_0_18px_rgba(0,232,157,.25)] transition-[height] duration-100 linear rounded-full" style={{ height: weightPct + '%' }} />
+              <div className="absolute w-[14px] h-full rounded-full gauge-track overflow-hidden">
+                <div className="absolute bottom-0 left-0 w-full transition-[height] duration-100 linear rounded-full" style={{ height: weightPct + '%', background: 'var(--accent-base)', boxShadow: '0 0 18px var(--accent-shadow)' }} />
               </div>
               <input 
                 type="range" min="30" max="180" value={stats.weightKg}

@@ -7,11 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        void: '#06060b',
-        'void-2': '#0c0c14',
-        panel: 'rgba(255,255,255,.04)',
-        'panel-2': 'rgba(255,255,255,.07)',
-        'panel-border': 'rgba(255,255,255,.10)',
+        void: 'var(--color-void)',
+        'void-2': 'var(--color-void-2)',
+        panel: 'var(--color-panel)',
+        'panel-2': 'var(--color-panel-2)',
+        'panel-border': 'var(--color-panel-border)',
         mint: {
           DEFAULT: '#00e89d',
           soft: 'rgba(0,232,157,.25)',
@@ -31,9 +31,9 @@ export default {
           soft: 'rgba(0,232,157,.25)',
         },
         text: {
-          DEFAULT: '#ebebeb',
-          dim: '#8a8a96',
-          dimmer: '#4e4e5a',
+          DEFAULT: 'var(--color-text)',
+          dim: 'var(--color-text-dim)',
+          dimmer: 'var(--color-text-dimmer)',
         }
       },
       fontFamily: {
