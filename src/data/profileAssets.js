@@ -22,5 +22,6 @@ export const AVAILABLE_FRAMES = [
   'frame_prismatic_transparent.png',
   'frame_flame_transparent.png',
   'frame_halo_transparent.png',
-  'frame_railgun_transparent.png'
+  'frame_railgun_transparent.png',
+  'frame_infinite_loop_transparent.png'
 ];
