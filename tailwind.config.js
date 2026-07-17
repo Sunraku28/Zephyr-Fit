@@ -34,6 +34,15 @@ export default {
           DEFAULT: 'var(--color-text)',
           dim: 'var(--color-text-dim)',
           dimmer: 'var(--color-text-dimmer)',
+        },
+        accent: {
+          base: 'var(--accent-base)',
+          bg: 'var(--accent-bg)',
+          border: 'var(--accent-border)',
+        },
+        glass: {
+          bg: 'var(--glass-bg)',
+          border: 'var(--glass-border)',
         }
       },
       fontFamily: {

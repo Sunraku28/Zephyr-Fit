@@ -8,7 +8,7 @@ import VitalsPage from './pages/VitalsPage';
 import FuelPage from './pages/FuelPage';
 import RankPage from './pages/RankPage';
 import MapPage from './pages/MapPage';
-import CompletePage from './pages/CompletePage';
+import DashboardPage from './pages/DashboardPage';
 
 export default function App() {
   const {
@@ -38,7 +38,7 @@ export default function App() {
   } else if (stage === 'map') {
     page = <MapPage constraints={payload.bodyConstraints} toggleJoint={toggleJoint} onFinish={finish} onBack={goBack} xp={xp} username={payload.account.username} />;
   } else {
-    page = <CompletePage payload={payload} onRestart={restart} />;
+    page = <DashboardPage payload={payload} onRestart={restart} />;
   }
 
   return (

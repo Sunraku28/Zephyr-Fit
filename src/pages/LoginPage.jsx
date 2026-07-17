@@ -21,6 +21,7 @@ export default function LoginPage({ onSubmit }) {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
 
   const validE = email.includes('@');
   const validP = password.length >= 6;
@@ -30,21 +31,17 @@ export default function LoginPage({ onSubmit }) {
     setLoading(true);
     setErrorMsg('');
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const usernameDisplay = userCredential.user.email.split('@')[0];
-      onSubmit(usernameDisplay);
-    } catch (error) {
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const usernameDisplay = userCredential.user.email.split('@')[0];
-          onSubmit(usernameDisplay);
-        } catch (regError) {
-          setErrorMsg(regError.message);
-        }
+      if (isRegister) {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const usernameDisplay = userCredential.user.email.split('@')[0];
+        onSubmit(usernameDisplay);
       } else {
-        setErrorMsg(error.message.replace('Firebase: ', ''));
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const usernameDisplay = userCredential.user.email.split('@')[0];
+        onSubmit(usernameDisplay);
       }
+    } catch (error) {
+      setErrorMsg(error.message.replace('Firebase: ', ''));
     }
     setLoading(false);
   };
@@ -87,9 +84,14 @@ export default function LoginPage({ onSubmit }) {
         )}
 
         <button className="cta-button" disabled={!ready} onClick={handleAuth}>
-          {loading ? 'Authenticating...' : 'Start Your Journey'}
+          {loading ? 'Authenticating...' : (isRegister ? 'Register Account' : 'Start Your Journey')}
         </button>
-        <p className="text-center text-xs text-text-dimmer mt-3.5">Valid email required · Password 6+ chars</p>
+        <p className="text-center text-xs text-text-dim mt-4">
+          {isRegister ? 'Already have an account? ' : 'Don\'t have an account? '}
+          <button onClick={() => { setIsRegister(!isRegister); setErrorMsg(''); }} className="text-accent-base font-bold hover:underline transition-colors">
+            {isRegister ? 'Log in' : 'Register'}
+          </button>
+        </p>
       </div>
     </div>
   );

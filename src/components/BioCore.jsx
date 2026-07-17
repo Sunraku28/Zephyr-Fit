@@ -1,6 +1,6 @@
-export default function BioCore({ size = 120, glow = "var(--accent-base)" }) {
+export default function BioCore({ size = 120, glow = "var(--accent-base)", className = "mx-auto mb-1.5" }) {
   return (
-    <div className="biocore relative mx-auto mb-1.5" style={{ width: size, height: size }}>
+    <div className={`biocore relative ${className}`} style={{ width: size, height: size }}>
       <svg viewBox="0 0 120 120" className="w-full h-full">
         <defs>
           <filter id="bioGlow">
