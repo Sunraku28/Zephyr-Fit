@@ -15,6 +15,7 @@ export default function App() {
     stage,
     payload,
     xp,
+    isGenerating,
     setPayload,
     setStats,
     setDiet,
@@ -29,7 +30,15 @@ export default function App() {
 
   let page;
   if (stage === 'login') {
-    page = <LoginPage onSubmit={(username) => { setPayload(p => ({ ...p, account: { username } })); goTo('vitals'); }} />;
+    page = <LoginPage onSubmit={(username, existingData, uid) => { 
+      if (existingData) {
+        setPayload(existingData);
+        goTo('complete');
+      } else {
+        setPayload(p => ({ ...p, account: { username, uid, profilePic: 'default.png', profileFrame: 'none' } })); 
+        goTo('vitals'); 
+      }
+    }} />;
   } else if (stage === 'vitals') {
     page = <VitalsPage stats={payload.stats} setStats={setStats} onNext={() => goTo('fuel')} onBack={goBack} xp={xp} username={payload.account.username} />;
   } else if (stage === 'fuel') {
@@ -37,7 +46,17 @@ export default function App() {
   } else if (stage === 'rank') {
     page = <RankPage rank={payload.activityRank} setRank={setRank} onNext={() => goTo('map')} onBack={goBack} xp={xp} username={payload.account.username} />;
   } else if (stage === 'map') {
-    page = <MapPage constraints={payload.bodyConstraints} toggleJoint={toggleJoint} onFinish={finish} onBack={goBack} xp={xp} username={payload.account.username} />;
+    page = (
+      <div className="relative w-full h-full">
+        <MapPage constraints={payload.bodyConstraints} toggleJoint={toggleJoint} onFinish={finish} onBack={goBack} xp={xp} username={payload.account.username} />
+        {isGenerating && (
+          <div className="absolute inset-0 z-50 bg-void/80 backdrop-blur-sm flex flex-col items-center justify-center">
+            <div className="w-16 h-16 border-4 border-accent-base/30 border-t-accent-base rounded-full animate-spin mb-4"></div>
+            <p className="text-accent-base font-bold tracking-widest uppercase">Generating Plan...</p>
+          </div>
+        )}
+      </div>
+    );
   } else {
     page = <DashboardPage payload={payload} onRestart={restart} setProfileAssets={setProfileAssets} />;
   }

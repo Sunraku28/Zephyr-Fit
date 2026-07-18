@@ -1,20 +1,8 @@
 import { useState } from 'react';
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from '../firebase';
 import BioCore from '../components/BioCore';
-
-// Firebase Setup encapsulated directly inside Login
-const firebaseConfig = {
-  apiKey: "AIzaSyAB1mdheOFoDGRGX4I4tPF_BqrCiIGscEE",
-  authDomain: "zephyr-fit.firebaseapp.com",
-  projectId: "zephyr-fit",
-  storageBucket: "zephyr-fit.firebasestorage.app",
-  messagingSenderId: "56763663017",
-  appId: "1:56763663017:web:537fd4476f96ae34901fb8"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 export default function LoginPage({ onSubmit }) {
   const [email, setEmail] = useState('');
@@ -31,14 +19,27 @@ export default function LoginPage({ onSubmit }) {
     setLoading(true);
     setErrorMsg('');
     try {
+      let userCredential;
       if (isRegister) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const usernameDisplay = userCredential.user.email.split('@')[0];
-        onSubmit(usernameDisplay);
+        onSubmit(usernameDisplay, null, userCredential.user.uid);
       } else {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
         const usernameDisplay = userCredential.user.email.split('@')[0];
-        onSubmit(usernameDisplay);
+        
+        let existingData = null;
+        try {
+          const docRef = doc(db, "users", userCredential.user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().schedule) {
+            existingData = docSnap.data();
+          }
+        } catch (dbError) {
+          console.warn("Could not fetch from Firestore, proceeding without saved data:", dbError);
+        }
+        
+        onSubmit(usernameDisplay, existingData, userCredential.user.uid);
       }
     } catch (error) {
       setErrorMsg(error.message.replace('Firebase: ', ''));

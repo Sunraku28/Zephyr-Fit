@@ -16,50 +16,18 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
 
   // Schedule View State
   const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const todayIndex = new Date().getDay() - 1;
+  const currentDay = DAYS[todayIndex >= 0 ? todayIndex : 6];
+  
   const [scheduleMode, setScheduleMode] = useState(null); // 'diet' | 'workout' | null
   const [selectedDay, setSelectedDay] = useState('Monday');
 
-  // Generate some dynamic mock tasks based on user payload
-  const [dietTasks, setDietTasks] = useState([
-    { id: 'd1', label: 'Morning Hydration (1L Water)', done: false },
-    { id: 'd2', label: diet === 'vegan' ? 'Plant-based Protein Breakfast' : 'High-Protein Breakfast', done: false },
-    { id: 'd3', label: diet === 'keto' ? 'Avocado & Greens Lunch' : 'Balanced Greens Lunch', done: false },
-    { id: 'd4', label: 'Low-Carb Dinner', done: false },
-  ]);
-
-  const [workoutTasks, setWorkoutTasks] = useState([
-    { id: 'w1', label: 'Dynamic Warmup (10m)', done: false },
-    { id: 'w2', label: payload?.activityRank === 'beginner' ? 'Light Core Stabilization' : 'Advanced Core Circuit', done: false },
-    { id: 'w3', label: payload?.bodyConstraints?.includes('knee') ? 'Low-Impact Swim/Cycle (20m)' : 'Cardio (20m)', done: false },
-  ]);
-
-  const [weeklyTasks, setWeeklyTasks] = useState({
-    diet: DAYS.reduce((acc, day) => ({
-      ...acc,
-      [day]: [
-        { id: `d1-${day}`, label: 'Morning Hydration (1L Water)', done: false },
-        { id: `d2-${day}`, label: diet === 'vegan' ? `Plant-based Protein (${day})` : `High-Protein Breakfast (${day})`, done: false },
-        { id: `d3-${day}`, label: diet === 'keto' ? `Low-Carb Meal Prep` : `Balanced Greens Lunch`, done: false },
-        { id: `d4-${day}`, label: `Evening Fasting Protocol`, done: false },
-      ]
-    }), {}),
-    workout: DAYS.reduce((acc, day, idx) => ({
-      ...acc,
-      [day]: [
-        { id: `w1-${day}`, label: 'Dynamic Warmup (10m)', done: false },
-        { id: `w2-${day}`, label: idx % 2 === 0 ? 'Upper Body Focus' : 'Lower Body / Core Focus', done: false },
-        { id: `w3-${day}`, label: idx === 6 ? 'Active Recovery / Stretch' : 'Cardio Finisher (15m)', done: false },
-      ]
-    }), {})
-  });
-
-  const toggleDietTask = (id) => {
-    setDietTasks(tasks => tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const defaultSchedule = payload?.schedule || {
+    diet: DAYS.reduce((acc, day) => ({ ...acc, [day]: [] }), {}),
+    workout: DAYS.reduce((acc, day) => ({ ...acc, [day]: [] }), {})
   };
 
-  const toggleWorkoutTask = (id) => {
-    setWorkoutTasks(tasks => tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  };
+  const [weeklyTasks, setWeeklyTasks] = useState(defaultSchedule);
 
   const toggleWeeklyTask = (type, day, id) => {
     setWeeklyTasks(prev => ({
@@ -70,6 +38,9 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
       }
     }));
   };
+
+  const toggleDietTask = (id) => toggleWeeklyTask('diet', currentDay, id);
+  const toggleWorkoutTask = (id) => toggleWeeklyTask('workout', currentDay, id);
 
   const toggleJointSelection = (joint) => {
     setSelectedConstraints(prev => 
@@ -156,7 +127,7 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
               </div>
               
               <div className="flex flex-col gap-3">
-                {dietTasks.map(task => (
+                {(weeklyTasks.diet[currentDay] || []).map(task => (
                   <label key={task.id} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleDietTask(task.id)} />
                     <div className={`w-[22px] h-[22px] rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_10px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
@@ -182,7 +153,7 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
               </div>
               
               <div className="flex flex-col gap-3">
-                {workoutTasks.map(task => (
+                {(weeklyTasks.workout[currentDay] || []).map(task => (
                   <label key={task.id} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleWorkoutTask(task.id)} />
                     <div className={`w-[22px] h-[22px] rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_10px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>

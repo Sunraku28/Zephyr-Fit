@@ -75,6 +75,31 @@ export default function VitalsPage({ stats, setStats, onNext, onBack, xp, userna
             </div>
           </div>
         </div>
+
+        {/* Goal Selector - spans full width */}
+        <div className="glass p-[26px] md:col-span-2">
+          <p className="font-mono text-[11.5px] tracking-[.18em] uppercase text-text-dim m-0 mb-[18px] text-center">Goal</p>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: 'weight-loss', label: 'Fat Loss', icon: '↓' },
+              { id: 'muscle-gain', label: 'Muscle Gain', icon: '↑' },
+              { id: 'maintenance', label: 'Maintenance', icon: '⟷' },
+            ].map(g => (
+              <button
+                key={g.id}
+                onClick={() => setStats(s => ({ ...s, goal: g.id }))}
+                className={`flex flex-col items-center gap-2.5 py-5 px-3 rounded-2xl border-2 transition-all font-bold text-sm ${
+                  stats.goal === g.id
+                    ? 'border-[var(--accent-base)] bg-[var(--accent-bg)] text-[var(--accent-base)] shadow-[0_0_20px_var(--accent-shadow)]'
+                    : 'border-transparent bg-[var(--input-bg)] text-text-dim hover:border-[var(--accent-base)]/30 hover:text-text'
+                }`}
+              >
+                <span className="text-2xl">{g.icon}</span>
+                <span>{g.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <button className="cta-button max-w-[400px] mt-[34px]" onClick={onNext}>Continue &#8594;</button>

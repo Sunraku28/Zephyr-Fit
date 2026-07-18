@@ -1,16 +1,20 @@
 import { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export const STAGE_ORDER = ['login', 'vitals', 'fuel', 'rank', 'map', 'complete'];
 export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, map: 400, complete: 500 };
 
 export function useOnboarding() {
   const [stage, setStage] = useState('login');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [payload, setPayload] = useState({
-    account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
-    stats: { age: 21, weightKg: 75, diet: null },
+    account: { username: '', profilePic: 'default.png', profileFrame: 'none', uid: null },
+    stats: { age: 21, weightKg: 75, diet: null, goal: null },
     activityRank: null,
     bodyConstraints: [],
+    schedule: null,
   });
 
   const goTo = (next) => {
@@ -55,15 +59,42 @@ export function useOnboarding() {
   const goBack = () => idx > 0 && goTo(STAGE_ORDER[idx - 1]);
   const xp = XP_MAP[stage];
 
-  const finish = () => {
-    console.log('Zephyr onboarding payload:', JSON.parse(JSON.stringify(payload)));
+  const finish = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          age: payload.stats.age,
+          weight: payload.stats.weightKg,
+          goal: payload.stats.goal,
+          dietClass: payload.stats.diet,
+          activityRank: payload.activityRank,
+          bodyConstraints: payload.bodyConstraints,
+        })
+      });
+      const result = await response.json();
+      
+      if (result.success && result.plan) {
+        const updatedPayload = { ...payload, schedule: result.plan };
+        if (payload.account.uid) {
+          setDoc(doc(db, "users", payload.account.uid), updatedPayload)
+            .catch(err => console.warn("Background sync warning:", err));
+        }
+        setPayload(updatedPayload);
+      }
+    } catch (e) {
+      console.error("Failed to generate plan:", e);
+    }
+    setIsGenerating(false);
     goTo('complete');
   };
 
   const restart = () => {
     setPayload({
       account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
-      stats: { age: 21, weightKg: 75, diet: null },
+      stats: { age: 21, weightKg: 75, diet: null, goal: null },
       activityRank: null,
       bodyConstraints: []
     });
@@ -74,6 +105,7 @@ export function useOnboarding() {
     stage,
     payload,
     xp,
+    isGenerating,
     setPayload,
     setStats,
     setDiet,
