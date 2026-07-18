@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import BioCore from '../components/BioCore';
 import AnatomyScan from '../components/AnatomyScan';
+import ProfileCustomizer from '../components/layout/ProfileCustomizer';
 
-export default function DashboardPage({ payload, onRestart }) {
+export default function DashboardPage({ payload, onRestart, setProfileAssets }) {
   const username = payload?.account?.username || 'User';
   const initial = username.charAt(0).toUpperCase();
   const diet = payload?.stats?.diet || 'balanced';
@@ -126,16 +127,19 @@ export default function DashboardPage({ payload, onRestart }) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-[calc(100vh-48px)] overflow-hidden rounded-3xl">
         {/* Header */}
-        <header className="flex justify-between items-center mb-6 glass border border-glass-border rounded-3xl p-4 px-7 shadow-lg">
+        <header className="relative z-50 flex justify-between items-center mb-6 glass border border-glass-border rounded-3xl p-4 px-7 shadow-lg">
           <div>
             <h1 className="text-[26px] font-extrabold text-text tracking-tight">Dashboard</h1>
             <p className="text-xs text-text-dim font-mono uppercase tracking-[0.2em] mt-1">Level 1 • {payload?.activityRank || 'Novice'}</p>
           </div>
           
-          {/* User Avatar */}
-          <div className="w-12 h-12 rounded-full border-2 border-accent-border bg-accent-bg flex items-center justify-center text-accent-base font-bold text-xl shadow-[0_0_16px_var(--accent-shadow)]">
-            {initial}
-          </div>
+          {/* User Avatar Customizer */}
+          <ProfileCustomizer 
+            profilePic={payload.account?.profilePic}
+            profileFrame={payload.account?.profileFrame}
+            setProfileAssets={setProfileAssets}
+            onLogout={onRestart}
+          />
         </header>
 
         {activeTab === 'home' ? (
