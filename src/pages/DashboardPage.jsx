@@ -69,12 +69,10 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
         painNotes,
         scheduleMode,
         selectedDay,
-        dietTasks,
-        workoutTasks,
         weeklyTasks
       }
     }));
-  }, [activeTab, selectedConstraints, painIntensity, painNotes, scheduleMode, selectedDay, dietTasks, workoutTasks, weeklyTasks, setPayload]);
+  }, [activeTab, selectedConstraints, painIntensity, painNotes, scheduleMode, selectedDay, weeklyTasks, setPayload]);
 
   return (
     <div className="w-full h-screen flex relative z-10 p-4 md:p-6 gap-6 box-border max-w-[1200px] mx-auto">
