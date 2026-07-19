@@ -65,7 +65,8 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
           goal: 'muscle',
           dietClass: payload.stats?.diet || 'balanced',
           activityRank: payload.activityRank || 'beginner',
-          bodyConstraints: selectedConstraints
+          bodyConstraints: selectedConstraints,
+          painIntensities: payload.painIntensities || {}
         })
       });
       const result = await response.json();
@@ -166,9 +167,16 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                     <div className={`w-[22px] h-[22px] rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_10px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
                       {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
                     </div>
-                    <span className={`text-[15px] font-medium transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
-                      {task.label}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className={`text-[15px] font-medium transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
+                        {task.label}
+                      </span>
+                      {task.ingredients && (
+                        <span className={`text-[11px] leading-snug mt-1 transition-all ${task.done ? 'text-text-dimmer' : 'text-text-dim'}`}>
+                          {task.ingredients}
+                        </span>
+                      )}
+                    </div>
                   </label>
                 ))}
               </div>
@@ -192,9 +200,16 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                     <div className={`w-[22px] h-[22px] rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_10px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
                       {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
                     </div>
-                    <span className={`text-[15px] font-medium transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
-                      {task.label}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className={`text-[15px] font-medium transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
+                        {task.label}
+                      </span>
+                      {task.sets && task.reps && (
+                        <span className={`text-[10px] mt-1 font-mono uppercase tracking-widest transition-all ${task.done ? 'text-text-dimmer' : 'text-accent-base'}`}>
+                          {task.sets} sets × {task.reps}
+                        </span>
+                      )}
+                    </div>
                   </label>
                 ))}
               </div>
@@ -266,9 +281,21 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                       {weeklyTasks[scheduleMode][selectedDay].map(task => (
                         <div key={task.id} className="flex items-center gap-4 p-4 rounded-2xl border border-glass-border bg-glass-bg/30">
                           <div className="w-[10px] h-[10px] rounded-full bg-accent-base shadow-[0_0_8px_var(--accent-shadow)]"></div>
-                          <span className="text-[15px] font-medium text-text">
-                            {task.label}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-[15px] font-medium text-text">
+                              {task.label}
+                            </span>
+                            {scheduleMode === 'diet' && task.ingredients && (
+                              <span className="text-[11px] leading-snug mt-1 text-text-dim">
+                                {task.ingredients}
+                              </span>
+                            )}
+                            {scheduleMode === 'workout' && task.sets && task.reps && (
+                              <span className="text-[10px] mt-1 font-mono uppercase tracking-widest text-accent-base">
+                                {task.sets} sets × {task.reps}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -47,7 +47,7 @@ export default function LoginPage({ onSubmit }) {
 
       if (userSnap.exists()) {
         const data = userSnap.data();
-        if (data.onboardingComplete) {
+        if (data.onboardingComplete && data.payload?.schedule) {
           onSubmit({
             needsOnboarding: false,
             payload: data.payload
@@ -66,7 +66,7 @@ export default function LoginPage({ onSubmit }) {
     if (localFallbackStr) {
       try {
         const localData = JSON.parse(localFallbackStr);
-        if (localData.onboardingComplete) {
+        if (localData.onboardingComplete && localData.payload?.schedule) {
           onSubmit({
             needsOnboarding: false,
             payload: localData.payload
@@ -103,9 +103,7 @@ export default function LoginPage({ onSubmit }) {
     setLoading(true);
     setErrorMsg('');
     try {
-      let userCredential;
       if (isRegister) {
-
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         try {
           await updateProfile(userCredential.user, {
@@ -118,8 +116,6 @@ export default function LoginPage({ onSubmit }) {
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         await checkOnboardingStatus(userCredential.user);
-
-
       }
     } catch (error) {
       console.error(error);

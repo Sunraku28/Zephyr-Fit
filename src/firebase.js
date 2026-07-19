@@ -3,7 +3,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAB1mdheOFoDGRGX4I4tPF_BqrCiIGscEE",
+  apiKey: "AIzaSyBAdc5QKJF4L12XvFstRL6gBeo6NnvSiGk",
   authDomain: "zephyr-fit.firebaseapp.com",
   projectId: "zephyr-fit",
   storageBucket: "zephyr-fit.firebasestorage.app",

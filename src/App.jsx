@@ -47,7 +47,7 @@ export default function App() {
   } else if (stage === 'map') {
     page = (
       <div className="relative w-full h-full">
-        <MapPage constraints={payload.bodyConstraints} toggleJoint={toggleJoint} onFinish={finish} onBack={goBack} xp={xp} username={payload.account.username} />
+        <MapPage constraints={payload.bodyConstraints} toggleJoint={toggleJoint} onFinish={(intensities) => finish(intensities)} onBack={goBack} xp={xp} username={payload.account.username} />
         {isGenerating && (
           <div className="absolute inset-0 z-50 bg-void/80 backdrop-blur-sm flex flex-col items-center justify-center">
             <div className="w-16 h-16 border-4 border-accent-base/30 border-t-accent-base rounded-full animate-spin mb-4"></div>

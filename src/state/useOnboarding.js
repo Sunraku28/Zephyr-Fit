@@ -14,6 +14,7 @@ export function useOnboarding() {
     stats: { age: 21, weightKg: 75, diet: null, goal: null },
     activityRank: null,
     bodyConstraints: [],
+    painIntensities: {},
     schedule: null,
   });
 
@@ -84,7 +85,7 @@ export function useOnboarding() {
     }
   }, [payload, stage]);
 
-  const finish = async () => {
+  const finish = async (painIntensities = {}) => {
     setIsGenerating(true);
     try {
       const response = await fetch('http://localhost:5000/api/generate-plan', {
@@ -97,23 +98,26 @@ export function useOnboarding() {
           dietClass: payload.stats.diet,
           activityRank: payload.activityRank,
           bodyConstraints: payload.bodyConstraints,
+          painIntensities: painIntensities,
         })
       });
       const result = await response.json();
       
-      let finalPayload = payload;
       if (result.success && result.plan) {
-        finalPayload = { ...payload, schedule: result.plan };
+        const finalPayload = { ...payload, schedule: result.plan, painIntensities };
         setPayload(finalPayload);
+        syncData(finalPayload);
+        console.log('Zephyr onboarding payload saved with schedule:', JSON.parse(JSON.stringify(finalPayload)));
+        setIsGenerating(false);
+        goTo('dashboard');
+      } else {
+        console.error("Plan generation returned no data:", result);
+        setIsGenerating(false);
       }
-      syncData(finalPayload);
-      console.log('Zephyr onboarding payload saved with schedule:', JSON.parse(JSON.stringify(finalPayload)));
     } catch (e) {
       console.error("Failed to generate plan:", e);
-      syncData(payload);
+      setIsGenerating(false);
     }
-    setIsGenerating(false);
-    goTo('dashboard');
   };
 
   const restart = () => {
@@ -121,7 +125,8 @@ export function useOnboarding() {
       account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
       stats: { age: 21, weightKg: 75, diet: null, goal: null },
       activityRank: null,
-      bodyConstraints: []
+      bodyConstraints: [],
+      painIntensities: {}
     });
     goTo('login');
   };

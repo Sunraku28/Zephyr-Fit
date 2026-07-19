@@ -41,11 +41,11 @@ export default function MapPage({ constraints, toggleJoint, onFinish, onBack, xp
                 <div className="mt-4 pt-3 border-t border-glass-border">
                   <label className="block text-xs font-bold text-text mb-2">Pain Intensity</label>
                   <div className="relative w-full h-8 flex items-center bg-input-bg rounded-full border border-input-border px-3">
-                    <input 
-                      type="range" 
-                      min="0" max="100" 
-                      value={painIntensities[j.constraintId] || 50} 
-                      onChange={(e) => setPainIntensities({ ...painIntensities, [j.constraintId]: parseInt(e.target.value) })} 
+                    <input
+                      type="range"
+                      min="0" max="100"
+                      value={painIntensities[j.constraintId] || 50}
+                      onChange={(e) => setPainIntensities({ ...painIntensities, [j.constraintId]: parseInt(e.target.value) })}
                       className="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10"
                     />
                     <div className="w-full h-1 bg-glass-border rounded-full relative overflow-hidden pointer-events-none">
@@ -65,7 +65,7 @@ export default function MapPage({ constraints, toggleJoint, onFinish, onBack, xp
         </div>
       </div>
 
-      <button className="cta-button max-w-[1040px] mt-[22px]" onClick={onFinish}>Generate Adaptive Plan (+500 Coins)</button>
+      <button className="cta-button max-w-[1040px] mt-[22px]" onClick={() => onFinish(painIntensities)}>Generate Adaptive Plan (+500 Coins)</button>
     </div>
   );
 }
