@@ -7,12 +7,14 @@ export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, map: 400, d
 
 export function useOnboarding() {
   const [stage, setStage] = useState('login');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [payload, setPayload] = useState({
-    account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
-    stats: { age: 21, weightKg: 75, diet: null },
+    account: { username: '', profilePic: 'default.png', profileFrame: 'none', uid: null },
+    stats: { age: 21, weightKg: 75, diet: null, goal: null },
     activityRank: null,
     bodyConstraints: [],
+    schedule: null,
   });
 
   const goTo = (next) => {
@@ -82,16 +84,42 @@ export function useOnboarding() {
     }
   }, [payload, stage]);
 
-  const finish = () => {
-    syncData(payload);
-    console.log('Zephyr onboarding payload saved:', JSON.parse(JSON.stringify(payload)));
+  const finish = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          age: payload.stats.age,
+          weight: payload.stats.weightKg,
+          goal: payload.stats.goal,
+          dietClass: payload.stats.diet,
+          activityRank: payload.activityRank,
+          bodyConstraints: payload.bodyConstraints,
+        })
+      });
+      const result = await response.json();
+      
+      let finalPayload = payload;
+      if (result.success && result.plan) {
+        finalPayload = { ...payload, schedule: result.plan };
+        setPayload(finalPayload);
+      }
+      syncData(finalPayload);
+      console.log('Zephyr onboarding payload saved with schedule:', JSON.parse(JSON.stringify(finalPayload)));
+    } catch (e) {
+      console.error("Failed to generate plan:", e);
+      syncData(payload);
+    }
+    setIsGenerating(false);
     goTo('dashboard');
   };
 
   const restart = () => {
     setPayload({
       account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
-      stats: { age: 21, weightKg: 75, diet: null },
+      stats: { age: 21, weightKg: 75, diet: null, goal: null },
       activityRank: null,
       bodyConstraints: []
     });
@@ -102,6 +130,7 @@ export function useOnboarding() {
     stage,
     payload,
     xp,
+    isGenerating,
     setPayload,
     setStats,
     setDiet,

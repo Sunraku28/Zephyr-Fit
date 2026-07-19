@@ -1,4 +1,5 @@
 import { useState } from 'react';
+<<<<<<< HEAD
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -7,6 +8,11 @@ import {
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, googleProvider, db } from '../firebase';
+=======
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from '../firebase';
+>>>>>>> a6927e44a8759bf16e1e6cbc72fe78b9e573b678
 import BioCore from '../components/BioCore';
 
 export default function LoginPage({ onSubmit }) {
@@ -106,7 +112,9 @@ export default function LoginPage({ onSubmit }) {
     setLoading(true);
     setErrorMsg('');
     try {
+      let userCredential;
       if (isRegister) {
+<<<<<<< HEAD
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         try {
           await updateProfile(userCredential.user, {
@@ -119,6 +127,27 @@ export default function LoginPage({ onSubmit }) {
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         await checkOnboardingStatus(userCredential.user);
+=======
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const usernameDisplay = userCredential.user.email.split('@')[0];
+        onSubmit(usernameDisplay, null, userCredential.user.uid);
+      } else {
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const usernameDisplay = userCredential.user.email.split('@')[0];
+        
+        let existingData = null;
+        try {
+          const docRef = doc(db, "users", userCredential.user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().schedule) {
+            existingData = docSnap.data();
+          }
+        } catch (dbError) {
+          console.warn("Could not fetch from Firestore, proceeding without saved data:", dbError);
+        }
+        
+        onSubmit(usernameDisplay, existingData, userCredential.user.uid);
+>>>>>>> a6927e44a8759bf16e1e6cbc72fe78b9e573b678
       }
     } catch (error) {
       console.error(error);
