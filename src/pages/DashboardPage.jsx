@@ -160,7 +160,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                 </span>
               </div>
               
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-2 scrollbar-thin">
                 {(weeklyTasks.diet[currentDay] || []).map(task => (
                   <label key={task.id} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleDietTask(task.id)} />
@@ -193,7 +193,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                 </span>
               </div>
               
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-2 scrollbar-thin">
                 {(weeklyTasks.workout[currentDay] || []).map(task => (
                   <label key={task.id} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleWorkoutTask(task.id)} />
