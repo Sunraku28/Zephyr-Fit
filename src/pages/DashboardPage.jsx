@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import BioCore from '../components/BioCore';
 import AnatomyScan from '../components/AnatomyScan';
+import { JOINTS } from '../data/joints';
 import ProfileCustomizer from '../components/layout/ProfileCustomizer';
 
-export default function DashboardPage({ payload, onRestart, setProfileAssets }) {
+export default function DashboardPage({ payload, setPayload, onRestart, setProfileAssets }) {
   const username = payload?.account?.username || 'User';
   const initial = username.charAt(0).toUpperCase();
   const diet = payload?.stats?.diet || 'balanced';
@@ -11,8 +12,9 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
   // UI State
   const [activeTab, setActiveTab] = useState('home');
   const [selectedConstraints, setSelectedConstraints] = useState(payload?.bodyConstraints || []);
-  const [painIntensity, setPainIntensity] = useState(50);
+  const [painIntensities, setPainIntensities] = useState({});
   const [painNotes, setPainNotes] = useState('');
+  const [isAdapting, setIsAdapting] = useState(false);
 
   // Schedule View State
   const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -50,9 +52,40 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
     );
   };
 
-  const handleSaveSchedule = () => {
-    // Save logic would go here
-    setActiveTab('home');
+  const handleSaveSchedule = async () => {
+    if (isAdapting) return;
+    setIsAdapting(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          age: payload.stats?.age || 25,
+          weight: payload.stats?.weightKg || 70,
+          goal: 'muscle',
+          dietClass: payload.stats?.diet || 'balanced',
+          activityRank: payload.activityRank || 'beginner',
+          bodyConstraints: selectedConstraints
+        })
+      });
+      const result = await response.json();
+      if (result.success && result.plan) {
+        setWeeklyTasks(result.plan);
+        if (setPayload) {
+          setPayload({
+            ...payload,
+            bodyConstraints: selectedConstraints,
+            schedule: result.plan
+          });
+        }
+        setActiveTab('schedule');
+        setScheduleMode(null);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsAdapting(false);
+    }
   };
 
   return (
@@ -256,27 +289,42 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
                 </div>
                 
                 <div className="flex flex-col gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-text mb-3">Pain Intensity</label>
-                    <div className="relative w-full h-10 flex items-center bg-input-bg rounded-full border border-input-border px-4">
-                      <input 
-                        type="range" 
-                        min="0" max="100" 
-                        value={painIntensity} 
-                        onChange={(e) => setPainIntensity(e.target.value)} 
-                        className="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10"
-                      />
-                      <div className="w-full h-1.5 bg-glass-border rounded-full relative overflow-hidden pointer-events-none">
-                        <div className="h-full bg-accent-base" style={{ width: `${painIntensity}%` }}></div>
-                      </div>
-                      <div className="absolute top-1/2 -mt-3 w-6 h-6 rounded-full bg-accent-base border-2 border-[var(--glass-bg)] shadow-[0_0_12px_var(--accent-shadow)] pointer-events-none" style={{ left: `calc(16px + (100% - 32px) * ${painIntensity / 100} - 12px)` }}></div>
+                  {selectedConstraints.length > 0 ? (
+                    <div className="flex flex-col gap-4 max-h-[250px] overflow-y-auto pr-2 scrollbar-thin">
+                      {selectedConstraints.map(constraintId => {
+                        const joint = JOINTS.find(j => j.constraintId === constraintId);
+                        const label = joint ? joint.label : constraintId;
+                        const value = painIntensities[constraintId] || 50;
+                        return (
+                          <div key={constraintId} className="bg-glass-bg/50 p-4 rounded-xl border border-glass-border">
+                            <label className="block text-sm font-bold text-text mb-3">{label} Pain</label>
+                            <div className="relative w-full h-10 flex items-center bg-input-bg rounded-full border border-input-border px-4">
+                              <input 
+                                type="range" 
+                                min="0" max="100" 
+                                value={value} 
+                                onChange={(e) => setPainIntensities({ ...painIntensities, [constraintId]: parseInt(e.target.value) })} 
+                                className="w-full h-full opacity-0 absolute inset-0 cursor-pointer z-10"
+                              />
+                              <div className="w-full h-1.5 bg-glass-border rounded-full relative overflow-hidden pointer-events-none">
+                                <div className="h-full bg-accent-base" style={{ width: `${value}%` }}></div>
+                              </div>
+                              <div className="absolute top-1/2 -mt-3 w-6 h-6 rounded-full bg-accent-base border-2 border-[var(--glass-bg)] shadow-[0_0_12px_var(--accent-shadow)] pointer-events-none" style={{ left: `calc(16px + (100% - 32px) * ${value / 100} - 12px)` }}></div>
+                            </div>
+                            <div className="flex justify-between mt-2 text-xs font-mono uppercase tracking-widest text-text-dim">
+                              <span>Mild</span>
+                              <span>Mod</span>
+                              <span>Severe</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="flex justify-between mt-2 text-xs font-mono uppercase tracking-widest text-text-dim">
-                      <span>Mild</span>
-                      <span>Moderate</span>
-                      <span>Extreme</span>
+                  ) : (
+                    <div className="text-sm text-text-dimmer italic p-4 bg-glass-bg/30 rounded-xl border border-glass-border">
+                      No pain areas selected. Tap the anatomy model to select a joint.
                     </div>
-                  </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-bold text-text mb-3">Context & Notes</label>
@@ -289,8 +337,8 @@ export default function DashboardPage({ payload, onRestart, setProfileAssets }) 
                   </div>
 
                   <div className="mt-auto pt-4">
-                    <button onClick={handleSaveSchedule} className="cta-button w-full shadow-[0_0_20px_var(--accent-shadow)]">
-                      Save & Adapt Plan
+                    <button onClick={handleSaveSchedule} disabled={isAdapting} className="cta-button w-full shadow-[0_0_20px_var(--accent-shadow)] disabled:opacity-50">
+                      {isAdapting ? 'Adapting Plan...' : 'Save & Adapt Plan'}
                     </button>
                   </div>
                 </div>

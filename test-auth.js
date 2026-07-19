@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { initializeFirestore } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAB1mdheOFoDGRGX4I4tPF_BqrCiIGscEE",
@@ -13,9 +12,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true
-});
-const googleProvider = new GoogleAuthProvider();
 
-export { app, auth, db, googleProvider };
+signInWithEmailAndPassword(auth, "test@example.com", "password123")
+  .then(() => console.log("Success!"))
+  .catch(e => console.error("Error:", e.message));

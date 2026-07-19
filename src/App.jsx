@@ -30,13 +30,12 @@ export default function App() {
 
   let page;
   if (stage === 'login') {
-    page = <LoginPage onSubmit={(username, existingData, uid) => { 
-      if (existingData) {
-        setPayload(existingData);
-        goTo('complete');
-      } else {
-        setPayload(p => ({ ...p, account: { username, uid, profilePic: 'default.png', profileFrame: 'none' } })); 
+    page = <LoginPage onSubmit={({ needsOnboarding, payload: newPayload }) => { 
+      setPayload(newPayload); 
+      if (needsOnboarding) {
         goTo('vitals'); 
+      } else {
+        goTo('dashboard');
       }
     }} />;
   } else if (stage === 'vitals') {
@@ -58,7 +57,7 @@ export default function App() {
       </div>
     );
   } else {
-    page = <DashboardPage payload={payload} onRestart={restart} setProfileAssets={setProfileAssets} />;
+    page = <DashboardPage payload={payload} setPayload={setPayload} onRestart={restart} setProfileAssets={setProfileAssets} />;
   }
 
   return (
