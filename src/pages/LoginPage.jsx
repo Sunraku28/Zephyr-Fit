@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signInWithPopup, 
-  updateProfile 
+
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  updateProfile
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, googleProvider, db } from '../firebase';
+
+
 import BioCore from '../components/BioCore';
 
 export default function LoginPage({ onSubmit }) {
@@ -14,7 +17,7 @@ export default function LoginPage({ onSubmit }) {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  
+
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
@@ -22,8 +25,8 @@ export default function LoginPage({ onSubmit }) {
   const validE = email.includes('@');
   const validP = password.length >= 6;
   const validName = firstName.trim().length > 0 && lastName.trim().length > 0;
-  
-  const ready = isRegister 
+
+  const ready = isRegister
     ? validE && validP && validName && !loading
     : validE && validP && !loading;
 
@@ -36,12 +39,12 @@ export default function LoginPage({ onSubmit }) {
     try {
       // Add a timeout to getDoc in case Firestore hangs indefinitely
       const userRef = doc(db, 'users', user.uid);
-      
+
       const docPromise = getDoc(userRef);
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 5000));
-      
+
       const userSnap = await Promise.race([docPromise, timeoutPromise]);
-      
+
       if (userSnap.exists()) {
         const data = userSnap.data();
         if (data.onboardingComplete) {
@@ -55,9 +58,9 @@ export default function LoginPage({ onSubmit }) {
     } catch (err) {
       console.warn("Firestore check failed or timed out, falling back to local files:", err);
     }
-    
+
     // Note: Local file API fallback was removed per user request.
-    
+
     // Check local storage fallback
     const localFallbackStr = localStorage.getItem(`zephyr_onboarding_${user.uid}`);
     if (localFallbackStr) {
@@ -74,24 +77,18 @@ export default function LoginPage({ onSubmit }) {
         console.error("Failed to parse local data", e);
       }
     }
-      
-    // If we reach here, no existing onboarding data was found.
-    // If they are trying to "Log in", block them and tell them to register.
-    if (!isRegister) {
-      setErrorMsg("Account data not found. Please switch to 'Register' to complete your profile and readings.");
-      setLoading(false);
-      return;
-    }
 
-    // Needs onboarding (or fallback if Firestore failed)
+    // If we reach here, no existing onboarding data was found.
+    // Whether they clicked "Log In" or "Register", since they successfully authenticated
+    // with Firebase, we just send them to the onboarding flow to build their profile!
     onSubmit({
       needsOnboarding: true,
       payload: {
-        account: { 
-          username: fullName, 
+        account: {
+          username: fullName,
           firstName: firstNameVal,
           lastName: lastNameVal,
-          profilePic: profilePic, 
+          profilePic: profilePic,
           profileFrame: 'none',
           uid: user.uid
         },
@@ -108,6 +105,7 @@ export default function LoginPage({ onSubmit }) {
     try {
       let userCredential;
       if (isRegister) {
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         try {
           await updateProfile(userCredential.user, {
@@ -120,10 +118,24 @@ export default function LoginPage({ onSubmit }) {
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         await checkOnboardingStatus(userCredential.user);
+
+
       }
     } catch (error) {
       console.error(error);
-      setErrorMsg(error.message.replace('Firebase: ', ''));
+      let userFriendlyMsg = "Authentication failed. Please try again.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        userFriendlyMsg = "Invalid email or password.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        userFriendlyMsg = "An account with this email already exists.";
+      } else if (error.code === 'auth/weak-password') {
+        userFriendlyMsg = "Password should be at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        userFriendlyMsg = "Invalid email address format.";
+      } else if (error.message) {
+        userFriendlyMsg = error.message.replace('Firebase: ', '');
+      }
+      setErrorMsg(userFriendlyMsg);
       setLoading(false);
     }
   };
@@ -208,14 +220,14 @@ export default function LoginPage({ onSubmit }) {
         <button className="cta-button w-full" disabled={!ready} onClick={handleEmailAuth}>
           {loading ? 'Authenticating...' : (isRegister ? 'Register Account' : 'Sign In')}
         </button>
-        
+
         <div className="flex items-center gap-3 my-2">
           <div className="h-px bg-white/10 flex-1"></div>
           <span className="text-xs text-text-dim uppercase tracking-wider">or</span>
           <div className="h-px bg-white/10 flex-1"></div>
         </div>
 
-        <button 
+        <button
           className="bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg py-3 px-4 font-semibold transition-colors flex items-center justify-center gap-3"
           onClick={handleGoogleAuth}
           disabled={loading}

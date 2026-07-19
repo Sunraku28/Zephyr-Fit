@@ -35,7 +35,18 @@ app.post('/api/generate-plan', async (req, res) => {
         
         console.log("Received plan request:", req.body);
 
-        const prompt = `Generate a 7-day fitness and diet schedule for a ${age} year old weighing ${weight}kg. Goal: ${goal}. Diet: ${dietClass}. Activity Level: ${activityRank}. Constraints: ${bodyConstraints && bodyConstraints.length > 0 ? bodyConstraints.join(", ") : "None"}.
+        let exercisesStr = "";
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const exercisesPath = path.resolve(__dirname, '../backend/exercise.json');
+            const exercisesData = fs.readFileSync(exercisesPath, 'utf8');
+            exercisesStr = `\n\nAVAILABLE EXERCISES (You MUST select all workout tasks EXCLUSIVELY from this JSON list. Do not invent any exercises. Strictly respect contraindications matching the user's constraints): ${exercisesData}\n`;
+        } catch (e) {
+            console.error("Could not load exercise.json", e);
+        }
+
+        const prompt = `Generate a 7-day fitness and diet schedule for a ${age} year old weighing ${weight}kg. Goal: ${goal}. Diet: ${dietClass}. Activity Level: ${activityRank}. Constraints: ${bodyConstraints && bodyConstraints.length > 0 ? bodyConstraints.join(", ") : "None"}.${exercisesStr}
 
 You MUST return the output ONLY as a JSON object, without any markdown formatting, following this exact schema:
 {
