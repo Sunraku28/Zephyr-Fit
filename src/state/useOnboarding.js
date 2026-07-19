@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { doc, setDoc } from "firebase/firestore";
+import { db } from '../firebase';
 
-export const STAGE_ORDER = ['login', 'vitals', 'fuel', 'rank', 'map', 'complete'];
-export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, map: 400, complete: 500 };
+export const STAGE_ORDER = ['login', 'vitals', 'fuel', 'rank', 'map', 'dashboard'];
+export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, map: 400, dashboard: 500 };
 
 export function useOnboarding() {
   const [stage, setStage] = useState('login');
@@ -55,9 +57,35 @@ export function useOnboarding() {
   const goBack = () => idx > 0 && goTo(STAGE_ORDER[idx - 1]);
   const xp = XP_MAP[stage];
 
+  const syncData = (currentPayload) => {
+    if (!currentPayload.account.uid) return;
+    const payloadData = { uid: currentPayload.account.uid, payload: currentPayload, onboardingComplete: true };
+    
+    try {
+      localStorage.setItem(`zephyr_onboarding_${currentPayload.account.uid}`, JSON.stringify(payloadData));
+    } catch (e) { console.error("Local storage error:", e); }
+
+    // (Local API saving removed per user request)
+    try {
+      setDoc(doc(db, 'users', currentPayload.account.uid), payloadData).catch(() => {});
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    // Only auto-save if they have reached the dashboard (onboarding complete)
+    if (stage === 'dashboard' && payload.account.uid) {
+      // Use a small timeout to debounce rapid state changes
+      const timer = setTimeout(() => {
+        syncData(payload);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [payload, stage]);
+
   const finish = () => {
-    console.log('Zephyr onboarding payload:', JSON.parse(JSON.stringify(payload)));
-    goTo('complete');
+    syncData(payload);
+    console.log('Zephyr onboarding payload saved:', JSON.parse(JSON.stringify(payload)));
+    goTo('dashboard');
   };
 
   const restart = () => {

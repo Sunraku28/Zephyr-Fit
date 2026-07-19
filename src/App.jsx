@@ -29,7 +29,14 @@ export default function App() {
 
   let page;
   if (stage === 'login') {
-    page = <LoginPage onSubmit={(username) => { setPayload(p => ({ ...p, account: { username } })); goTo('vitals'); }} />;
+    page = <LoginPage onSubmit={({ needsOnboarding, payload: newPayload }) => { 
+      setPayload(newPayload); 
+      if (needsOnboarding) {
+        goTo('vitals'); 
+      } else {
+        goTo('dashboard');
+      }
+    }} />;
   } else if (stage === 'vitals') {
     page = <VitalsPage stats={payload.stats} setStats={setStats} onNext={() => goTo('fuel')} onBack={goBack} xp={xp} username={payload.account.username} />;
   } else if (stage === 'fuel') {
@@ -39,7 +46,7 @@ export default function App() {
   } else if (stage === 'map') {
     page = <MapPage constraints={payload.bodyConstraints} toggleJoint={toggleJoint} onFinish={finish} onBack={goBack} xp={xp} username={payload.account.username} />;
   } else {
-    page = <DashboardPage payload={payload} onRestart={restart} setProfileAssets={setProfileAssets} />;
+    page = <DashboardPage payload={payload} setPayload={setPayload} onRestart={restart} setProfileAssets={setProfileAssets} />;
   }
 
   return (
