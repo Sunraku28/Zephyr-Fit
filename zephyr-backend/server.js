@@ -31,7 +31,7 @@ app.get('/test-ai', async (req, res) => {
 
 app.post('/api/generate-plan', async (req, res) => {
     try {
-        const { age, weight, goal, dietClass, activityRank, bodyConstraints } = req.body;
+        const { age, weight, goal, dietClass, activityRank, bodyConstraints, painIntensities } = req.body;
         
         console.log("Received plan request:", req.body);
 
@@ -41,17 +41,75 @@ app.post('/api/generate-plan', async (req, res) => {
             const path = require('path');
             const exercisesPath = path.resolve(__dirname, '../backend/exercise.json');
             const exercisesData = fs.readFileSync(exercisesPath, 'utf8');
-            exercisesStr = `\n\nAVAILABLE EXERCISES (You MUST select all workout tasks EXCLUSIVELY from this JSON list. Do not invent any exercises. Strictly respect contraindications matching the user's constraints): ${exercisesData}\n`;
+            exercisesStr = `\n\nAVAILABLE EXERCISES DATABASE (JSON):\n${exercisesData}\n`;
         } catch (e) {
             console.error("Could not load exercise.json", e);
         }
 
-        const prompt = `Generate a 7-day fitness and diet schedule for a ${age} year old weighing ${weight}kg. Goal: ${goal}. Diet: ${dietClass}. Activity Level: ${activityRank}. Constraints: ${bodyConstraints && bodyConstraints.length > 0 ? bodyConstraints.join(", ") : "None"}.${exercisesStr}
+        // Build pain context string with severity levels
+        let painContext = "No body constraints reported.";
+        if (bodyConstraints && bodyConstraints.length > 0) {
+            const painDetails = bodyConstraints.map(constraint => {
+                const intensity = (painIntensities && painIntensities[constraint]) || 50;
+                let severity;
+                if (intensity <= 33) severity = "MILD";
+                else if (intensity <= 66) severity = "MODERATE";
+                else severity = "SEVERE";
+                return `  - ${constraint}: ${severity} (intensity ${intensity}/100)`;
+            }).join("\n");
+            painContext = `Body constraints with pain severity:\n${painDetails}`;
+        }
 
-You MUST return the output ONLY as a JSON object, without any markdown formatting, following this exact schema:
+        const prompt = `You are a certified sports physiologist and registered dietitian creating a personalized 7-day fitness and nutrition plan.
+
+USER PROFILE:
+- Age: ${age} years old
+- Weight: ${weight} kg
+- Fitness Goal: ${goal || "general fitness"}
+- Diet Preference: ${dietClass || "balanced"}
+- Activity Level: ${activityRank || "beginner"}
+
+BODY CONSTRAINTS:
+${painContext}
+
+PAIN-AWARE EXERCISE SELECTION RULES (CRITICAL):
+1. MILD pain (0-33): Include most exercises for the affected area. Prefer lighter variations and reduce sets/reps slightly. Do NOT exclude the muscle group.
+2. MODERATE pain (34-66): Substitute with low-activation alternatives that minimize stress on the affected joint. For example, if the user has moderate shoulder pain, avoid heavy overhead pressing but still include exercises like lateral raises with light weight, face pulls, or band pull-aparts. Do NOT exclude all upper body movements.
+3. SEVERE pain (67-100): Exclude exercises that directly load the affected joint. However, still include exercises for surrounding or unrelated muscle groups. For example, severe shoulder pain should exclude overhead press and push-ups, but bicep curls, tricep kickbacks, and core work are still fine.
+4. NEVER skip an entire muscle group for the whole week unless the pain is SEVERE and every exercise for that group directly loads the affected joint.
+${exercisesStr}
+EXERCISE DATABASE INSTRUCTIONS:
+- Select ALL workout exercises EXCLUSIVELY from the exercise database above. Do NOT invent exercises.
+- Respect the "contraindications" field: cross-reference each exercise's contraindications with the user's body constraints and their severity level.
+- Use the exercise's "baseline_sets" and "baseline_reps" as starting points, then adjust based on pain severity and activity level.
+- Match exercises to the user's activity rank using the "ranks" field.
+
+SCHEDULE VARIETY RULES (CRITICAL):
+- Each day MUST have a DIFFERENT workout routine. Vary the target muscle groups, exercise selection, and exercise order across the week.
+- Use a proper training split (e.g., Push/Pull/Legs, Upper/Lower, or Full Body with different exercises). Do NOT repeat the same 3 exercises every day.
+- Include at least 1 rest day or active recovery day (with mobility/stretching exercises only).
+- Vary diet meals across the week too — do not repeat the same breakfast every day.
+
+WORKOUT REQUIREMENTS:
+- Provide exactly 5 exercises per workout day (3 exercises on rest/recovery days — mobility and stretching only).
+- Each exercise MUST include "sets" (number) and "reps" (number or string like "30 sec hold").
+- Adjust sets and reps based on the user's activity level and any pain constraints.
+
+DIET REQUIREMENTS:
+- Provide exactly 4 meals per day (Breakfast, Lunch, Snack, Dinner).
+- Each meal MUST include an "ingredients" field with EXPLICIT quantities. Example: "50g rolled oats, 200ml whole milk, 1 medium banana (sliced), 10g honey, 15g almonds".
+- Tailor calorie distribution and macros to the user's goal (${goal || "general fitness"}) and diet preference (${dietClass || "balanced"}).
+- Vary meals across the week — avoid repeating the same dish on consecutive days.
+
+You MUST return the output ONLY as a JSON object following this EXACT schema:
 {
   "diet": {
-    "Monday": [{ "id": "d1-Mon", "label": "Task name", "done": false }],
+    "Monday": [
+      { "id": "d1-Mon", "label": "Oatmeal with Banana & Almonds", "ingredients": "50g rolled oats, 200ml whole milk, 1 medium banana (sliced), 10g honey, 15g almonds", "done": false },
+      { "id": "d2-Mon", "label": "Grilled Chicken Salad", "ingredients": "150g chicken breast, 100g mixed greens, 50g cherry tomatoes, 30g feta cheese, 15ml olive oil, 10ml lemon juice", "done": false },
+      { "id": "d3-Mon", "label": "Greek Yogurt & Berries", "ingredients": "200g Greek yogurt (0% fat), 80g mixed berries, 10g chia seeds, 5g honey", "done": false },
+      { "id": "d4-Mon", "label": "Salmon with Quinoa & Veggies", "ingredients": "150g salmon fillet, 80g quinoa (dry weight), 100g steamed broccoli, 50g roasted bell peppers, 10ml olive oil", "done": false }
+    ],
     "Tuesday": [...],
     "Wednesday": [...],
     "Thursday": [...],
@@ -60,7 +118,13 @@ You MUST return the output ONLY as a JSON object, without any markdown formattin
     "Sunday": [...]
   },
   "workout": {
-    "Monday": [{ "id": "w1-Mon", "label": "Task name", "done": false }],
+    "Monday": [
+      { "id": "w1-Mon", "label": "Dumbbell Bicep Curl", "sets": 3, "reps": 12, "done": false },
+      { "id": "w2-Mon", "label": "Standard Squat", "sets": 3, "reps": 10, "done": false },
+      { "id": "w3-Mon", "label": "Forearm Plank", "sets": 3, "reps": "45 sec hold", "done": false },
+      { "id": "w4-Mon", "label": "Glute Bridge", "sets": 3, "reps": 15, "done": false },
+      { "id": "w5-Mon", "label": "Dead Bug", "sets": 3, "reps": 10, "done": false }
+    ],
     "Tuesday": [...],
     "Wednesday": [...],
     "Thursday": [...],
@@ -68,8 +132,7 @@ You MUST return the output ONLY as a JSON object, without any markdown formattin
     "Saturday": [...],
     "Sunday": [...]
   }
-}
-Provide exactly 4 diet tasks and 3 workout tasks per day. Use short labels.`;
+}`;
         
         const response = await ai.models.generateContent({
             model: 'gemini-3.5-flash',
