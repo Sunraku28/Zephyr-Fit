@@ -69,9 +69,9 @@ export default function BadgeCelebration({ badge, onClose }) {
         <div style={{ perspective: 1200, width: 220, height: 220, position: 'relative' }}>
           <motion.div
             className="badge-celebration-badge"
-            style={{ 
-              transformStyle: 'preserve-3d', 
-              width: '100%', 
+            style={{
+              transformStyle: 'preserve-3d',
+              width: '100%',
               height: '100%',
               position: 'relative'
             }}
@@ -87,17 +87,39 @@ export default function BadgeCelebration({ badge, onClose }) {
               },
             }}
           >
-            {/* The badge image itself */}
+            {/* 3D Extruded Badge Layers */}
             {badge.image ? (
-              <img
-                src={badge.image}
-                alt={badge.title}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                }}
-              />
+              <motion.div style={{
+                width: '100%',
+                height: '100%',
+                transformStyle: 'preserve-3d',
+                transform: 'rotateX(8deg)' /* Slight tilt to prevent disappearing edge-on */
+              }}>
+                {[...Array(30)].map((_, i) => {
+                  const isFront = i === 29;
+                  const isBack = i === 0;
+                  const isEdge = !isFront && !isBack;
+                  
+                  return (
+                    <img
+                      key={i}
+                      src={badge.image}
+                      alt={badge.title}
+                      style={{
+                        position: isFront ? 'relative' : 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        transform: `translateZ(${i - 15}px) ${isBack ? 'rotateY(180deg)' : ''}`,
+                        filter: isFront ? 'drop-shadow(0 10px 15px rgba(0,0,0,0.5))' : (isEdge ? 'brightness(0.7)' : 'none'),
+                        pointerEvents: isFront ? 'auto' : 'none',
+                        backfaceVisibility: isEdge ? 'visible' : 'hidden'
+                      }}
+                    />
+                  );
+                })}
+              </motion.div>
             ) : (
               <div style={{
                 position: 'absolute',

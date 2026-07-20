@@ -54,7 +54,7 @@ export const BADGE_DEFINITIONS = [
     description: '1-day streak! The hardest step is the first one.',
     colors: { ring: '#f8fafc', glow: '#e2e8f0', bg: '#0f172a', icon: '#ffffff' },
     icon: 'spark',
-    image: '/images/badges/30-days-streak.png',
+    image: '/images/badges/1-day-streak.png',
   },
   {
     id: 'streak-30',
@@ -64,7 +64,7 @@ export const BADGE_DEFINITIONS = [
     description: '30-day streak! Your fire is lit.',
     colors: { ring: '#ef4444', glow: '#dc2626', bg: '#7f1d1d', icon: '#fca5a5' },
     icon: 'flame',
-    image: '/images/badges/1-day-streak.png',
+    image: '/images/badges/30-days-streak.png',
   },
   {
     id: 'streak-60',
