@@ -16,6 +16,7 @@ export function useOnboarding() {
     bodyConstraints: [],
     painIntensities: {},
     schedule: null,
+    history: {},
   });
 
   const goTo = (next) => {
@@ -126,7 +127,8 @@ export function useOnboarding() {
       stats: { age: 21, weightKg: 75, diet: null, goal: null },
       activityRank: null,
       bodyConstraints: [],
-      painIntensities: {}
+      painIntensities: {},
+      history: {},
     });
     goTo('login');
   };

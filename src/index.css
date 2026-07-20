@@ -573,3 +573,323 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.03);
 }
+
+/* ═══════════════════════════════════════════════════
+   HEATMAP
+   ═══════════════════════════════════════════════════ */
+.heatmap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.heatmap-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.heatmap-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.heatmap-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.heatmap-stat-streak {
+  color: #4ade80;
+}
+
+.heatmap-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-text-dim);
+  margin-top: 6px;
+}
+
+.heatmap-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.heatmap-svg {
+  display: block;
+}
+
+.heatmap-month-label {
+  font-size: 10px;
+  fill: var(--color-text-dim);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+.heatmap-day-label {
+  font-size: 9px;
+  fill: var(--color-text-dimmer);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.heatmap-cell {
+  fill: var(--glass-bg);
+  stroke: var(--glass-border);
+  stroke-width: 0.5;
+  transition: fill 0.2s ease;
+}
+
+.heatmap-cell:hover {
+  stroke: var(--accent-base);
+  stroke-width: 1;
+}
+
+.heatmap-cell-active {
+  fill: #86efac !important;
+  stroke: #4ade80 !important;
+  stroke-width: 0.5;
+}
+
+.heatmap-cell-today {
+  stroke: var(--accent-base) !important;
+  stroke-width: 1.5;
+}
+
+.heatmap-cell-future {
+  fill: transparent !important;
+  stroke: none !important;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.heatmap-legend-text {
+  font-size: 10px;
+  color: var(--color-text-dimmer);
+  font-weight: 500;
+}
+
+.heatmap-legend-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+}
+
+.heatmap-legend-cell.heatmap-cell-active {
+  background: #86efac;
+  border-color: #4ade80;
+}
+
+/* ═══════════════════════════════════════════════════
+   BADGE CIRCLE (Image-based)
+   ═══════════════════════════════════════════════════ */
+.badge-svg-wrapper {
+  position: relative;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.badge-svg-wrapper:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.badge-circle {
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.badge-circle-earned {
+  border: none;
+}
+
+.badge-circle-locked {
+  border: 2px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+
+.badge-image {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.badge-lock-icon {
+  color: var(--color-text-dimmer);
+  opacity: 0.4;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+.badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.badge-card:hover {
+  background: var(--glass-bg);
+}
+
+.badge-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.badge-card-title.locked {
+  color: var(--color-text-dimmer);
+}
+
+.badge-card-threshold {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-text-dimmer);
+}
+
+.badge-section-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════
+   BADGE CELEBRATION OVERLAY
+   ═══════════════════════════════════════════════════ */
+.badge-celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+.badge-celebration-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.badge-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.badge-celebration-badge {
+  position: relative;
+  perspective: 800px;
+  margin-bottom: 24px;
+}
+
+.badge-ring-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 2px solid;
+  pointer-events: none;
+}
+
+.badge-celebration-type {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.badge-celebration-title {
+  font-size: 36px;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.badge-celebration-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 16px;
+  text-align: center;
+  max-width: 380px;
+  line-height: 1.5;
+}
+
+.badge-celebration-threshold {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.badge-celebration-hint {
+  position: absolute;
+  bottom: 32px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* Badge celebration rotation keyframes */
+@keyframes badge-spin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px transparent; }
+  50% { box-shadow: 0 0 40px var(--accent-base); }
+}

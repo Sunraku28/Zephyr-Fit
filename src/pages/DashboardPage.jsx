@@ -1,8 +1,19 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import BioCore from '../components/BioCore';
 import AnatomyScan from '../components/AnatomyScan';
+import Heatmap from '../components/Heatmap';
+import BadgeSVG, { BADGE_DEFINITIONS } from '../components/BadgeSVG';
+import BadgeCelebration from '../components/BadgeCelebration';
 import { JOINTS } from '../data/joints';
 import ProfileCustomizer from '../components/layout/ProfileCustomizer';
+
+// Timezone-safe local date formatter (avoids UTC shift from toISOString)
+function toLocalDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 export default function DashboardPage({ payload, setPayload, onRestart, setProfileAssets }) {
   const username = payload?.account?.username || 'User';
@@ -15,6 +26,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
   const [painIntensities, setPainIntensities] = useState({});
   const [painNotes, setPainNotes] = useState('');
   const [isAdapting, setIsAdapting] = useState(false);
+  const [celebratingBadge, setCelebratingBadge] = useState(null);
 
   // Schedule View State
   const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -31,14 +43,137 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
 
   const [weeklyTasks, setWeeklyTasks] = useState(defaultSchedule);
 
-  const toggleWeeklyTask = (type, day, id) => {
-    setWeeklyTasks(prev => ({
-      ...prev,
-      [type]: {
-        ...prev[type],
-        [day]: prev[type][day].map(t => t.id === id ? { ...t, done: !t.done } : t)
+  // ── History & Badge Logic ──
+  const history = payload?.history || {};
+
+  const { totalDays, currentStreak, longestStreak } = useMemo(() => {
+    const historyDates = Object.keys(history).sort();
+    const totalDays = historyDates.length;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let currentStreak = 0;
+    const checkDate = new Date(today);
+    while (true) {
+      const ds = toLocalDateStr(checkDate);
+      if (history[ds]) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else break;
+    }
+
+    let longestStreak = 0, tempStreak = 0;
+    const allDates = new Set(historyDates);
+    if (historyDates.length > 0) {
+      const first = new Date(historyDates[0]);
+      const last = new Date(historyDates[historyDates.length - 1]);
+      const d = new Date(first);
+      while (d <= last) {
+        if (allDates.has(toLocalDateStr(d))) {
+          tempStreak++;
+          longestStreak = Math.max(longestStreak, tempStreak);
+        } else {
+          tempStreak = 0;
+        }
+        d.setDate(d.getDate() + 1);
       }
-    }));
+    }
+    return { totalDays, currentStreak, longestStreak };
+  }, [history]);
+
+  const earnedBadges = useMemo(() => {
+    return BADGE_DEFINITIONS.filter(badge => {
+      if (badge.type === 'total') return totalDays >= badge.threshold;
+      if (badge.type === 'streak') return longestStreak >= badge.threshold;
+      return false;
+    }).map(b => b.id);
+  }, [totalDays, longestStreak]);
+
+  // Check if a new badge was just earned and trigger celebration
+  const checkForNewBadges = useCallback((newHistory) => {
+    const historyDates = Object.keys(newHistory).sort();
+    const newTotal = historyDates.length;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let newCurrentStreak = 0;
+    const checkDate = new Date(today);
+    while (true) {
+      const ds = toLocalDateStr(checkDate);
+      if (newHistory[ds]) {
+        newCurrentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else break;
+    }
+
+    let newLongest = 0, ts = 0;
+    const allDates = new Set(historyDates);
+    if (historyDates.length > 0) {
+      const first = new Date(historyDates[0]);
+      const last = new Date(historyDates[historyDates.length - 1]);
+      const d = new Date(first);
+      while (d <= last) {
+        if (allDates.has(toLocalDateStr(d))) {
+          ts++;
+          newLongest = Math.max(newLongest, ts);
+        } else {
+          ts = 0;
+        }
+        d.setDate(d.getDate() + 1);
+      }
+    }
+
+    // Check each badge: was NOT earned before, IS earned now
+    for (const badge of BADGE_DEFINITIONS) {
+      const wasEarned = earnedBadges.includes(badge.id);
+      let isNowEarned = false;
+      if (badge.type === 'total') isNowEarned = newTotal >= badge.threshold;
+      if (badge.type === 'streak') isNowEarned = newLongest >= badge.threshold;
+      if (!wasEarned && isNowEarned) {
+        setCelebratingBadge(badge);
+        return; // Show one at a time
+      }
+    }
+  }, [earnedBadges]);
+
+  const toggleWeeklyTask = (type, day, id) => {
+    setWeeklyTasks(prev => {
+      const updated = {
+        ...prev,
+        [type]: {
+          ...prev[type],
+          [day]: prev[type][day].map(t => t.id === id ? { ...t, done: !t.done } : t)
+        }
+      };
+
+      // Check if all workout tasks for the current day are done
+      if (type === 'workout' && day === currentDay) {
+        const allDone = updated.workout[day].every(t => t.done);
+        const todayStr = toLocalDateStr(new Date());
+
+        if (allDone && updated.workout[day].length > 0) {
+          // Mark today as complete — use functional updater for latest state
+          if (setPayload) {
+            setPayload(p => {
+              const newHistory = { ...(p.history || {}), [todayStr]: true };
+              checkForNewBadges(newHistory);
+              return { ...p, history: newHistory };
+            });
+          }
+        } else {
+          // Remove today from history — use functional updater
+          if (setPayload) {
+            setPayload(p => {
+              const newHistory = { ...(p.history || {}) };
+              delete newHistory[todayStr];
+              return { ...p, history: newHistory };
+            });
+          }
+        }
+      }
+
+      return updated;
+    });
   };
 
   const toggleDietTask = (id) => toggleWeeklyTask('diet', currentDay, id);
@@ -91,6 +226,11 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
 
   return (
     <div className="w-full h-screen flex relative z-10 p-4 md:p-6 gap-6 box-border max-w-[1200px] mx-auto">
+      {/* Badge Celebration Overlay */}
+      {celebratingBadge && (
+        <BadgeCelebration badge={celebratingBadge} onClose={() => setCelebratingBadge(null)} />
+      )}
+
       {/* Sidebar */}
       <aside className="glass hidden md:flex flex-col w-64 rounded-3xl p-6 h-[calc(100vh-48px)] border border-glass-border">
         <div className="flex items-center gap-3 mb-10">
@@ -109,8 +249,8 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
             Schedule
           </button>
           
-          <button className="text-left px-5 py-3.5 rounded-2xl text-text-dim font-medium hover:text-accent-base hover:bg-glass-bg transition-all flex items-center gap-3 border border-transparent">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          <button onClick={() => setActiveTab('heatmap')} className={`text-left px-5 py-3.5 rounded-2xl font-bold transition-all flex items-center gap-3 ${activeTab === 'heatmap' ? 'bg-accent-bg text-accent-base shadow-[0_0_12px_var(--accent-shadow)] border border-accent-border' : 'text-text-dim hover:text-accent-base hover:bg-glass-bg border border-transparent'}`}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             Heatmap
           </button>
 
@@ -303,6 +443,99 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                 </div>
               </div>
             )}
+          </div>
+        ) : activeTab === 'heatmap' ? (
+          /* ════════════════════════════════════════════
+             HEATMAP & BADGES TAB
+             ════════════════════════════════════════════ */
+          <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col gap-6 scrollbar-hide">
+            {/* Heatmap Section */}
+            <section className="glass rounded-3xl p-7 border border-glass-border">
+              <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
+                <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  Activity Heatmap
+                </h2>
+                <span className="text-[10px] font-mono text-accent-base uppercase tracking-widest bg-accent-bg border border-accent-border/30 px-3 py-1.5 rounded-lg">
+                  Last 365 Days
+                </span>
+              </div>
+              <Heatmap history={history} />
+            </section>
+
+            {/* Trophy Case — Total Count Badges */}
+            <section className="glass rounded-3xl p-7 border border-glass-border">
+              <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
+                <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
+                  🏆 Trophy Case
+                </h2>
+                <span className="text-[10px] font-mono text-accent-base uppercase tracking-widest bg-accent-bg border border-accent-border/30 px-3 py-1.5 rounded-lg">
+                  {earnedBadges.length} Earned
+                </span>
+              </div>
+
+              {earnedBadges.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">🔒</div>
+                  <p className="text-text-dim text-sm font-medium">No badges earned yet.</p>
+                  <p className="text-text-dimmer text-xs mt-2">Complete all workouts for a day to start building your streak!</p>
+                </div>
+              ) : (
+                <>
+                  {/* Earned Total Count Badges */}
+                  {BADGE_DEFINITIONS.filter(b => b.type === 'total' && earnedBadges.includes(b.id)).length > 0 && (
+                    <>
+                      <div className="badge-section-title">
+                        🏋️ Total Workout Days
+                      </div>
+                      <div className="badges-grid" style={{ marginBottom: 24 }}>
+                        {BADGE_DEFINITIONS.filter(b => b.type === 'total' && earnedBadges.includes(b.id)).map(badge => (
+                          <div
+                            key={badge.id}
+                            className="badge-card"
+                            onClick={() => setCelebratingBadge(badge)}
+                          >
+                            <BadgeSVG badge={badge} earned={true} size={80} />
+                            <span className="badge-card-title">
+                              {badge.title}
+                            </span>
+                            <span className="badge-card-threshold">
+                              {badge.threshold} days
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Earned Streak Badges */}
+                  {BADGE_DEFINITIONS.filter(b => b.type === 'streak' && earnedBadges.includes(b.id)).length > 0 && (
+                    <>
+                      <div className="badge-section-title">
+                        🔥 Streak Milestones
+                      </div>
+                      <div className="badges-grid">
+                        {BADGE_DEFINITIONS.filter(b => b.type === 'streak' && earnedBadges.includes(b.id)).map(badge => (
+                          <div
+                            key={badge.id}
+                            className="badge-card"
+                            onClick={() => setCelebratingBadge(badge)}
+                          >
+                            <BadgeSVG badge={badge} earned={true} size={80} />
+                            <span className="badge-card-title">
+                              {badge.title}
+                            </span>
+                            <span className="badge-card-threshold">
+                              {badge.threshold}-day streak
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </section>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col gap-6 scrollbar-hide">
