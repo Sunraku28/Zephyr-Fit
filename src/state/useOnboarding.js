@@ -110,6 +110,7 @@ export function useOnboarding() {
           equipment: payload.stats.equipment,
           bodyConstraints: payload.bodyConstraints,
           painIntensities: painIntensities,
+          country: payload.account?.country,
         })
       });
       const result = await response.json();

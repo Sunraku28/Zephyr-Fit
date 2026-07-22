@@ -31,7 +31,7 @@ app.get('/test-ai', async (req, res) => {
 
 app.post('/api/generate-plan', async (req, res) => {
     try {
-        const { age, weight, goal, dietClass, activityRank, workoutDays, equipment, bodyConstraints, painIntensities } = req.body;
+        const { age, weight, goal, dietClass, activityRank, workoutDays, equipment, bodyConstraints, painIntensities, country } = req.body;
         
         console.log("Received plan request:", req.body);
 
@@ -68,6 +68,7 @@ USER PROFILE:
 - Fitness Goal: ${goal || "general fitness"}
 - Diet Preference: ${dietClass || "balanced"}
 - Activity Level: ${activityRank || "beginner"}
+- Country/Region: ${country || "Global"}
 
 BODY CONSTRAINTS:
 ${painContext}
@@ -79,9 +80,9 @@ EQUIPMENT AVAILABILITY:
 - "no_equipment": Bodyweight only. No weights or machines.
 
 PAIN-AWARE EXERCISE SELECTION RULES (CRITICAL):
-1. MILD pain (0-33): Include most exercises for the affected area. Prefer lighter variations and reduce sets/reps slightly. Do NOT exclude the muscle group.
-2. MODERATE pain (34-66): Substitute with low-activation alternatives that minimize stress on the affected joint. For example, if the user has moderate shoulder pain, avoid heavy overhead pressing but still include exercises like lateral raises with light weight, face pulls, or band pull-aparts. Do NOT exclude all upper body movements.
-3. SEVERE pain (67-100): Exclude exercises that directly load the affected joint. However, still include exercises for surrounding or unrelated muscle groups. For example, severe shoulder pain should exclude overhead press and push-ups, but bicep curls, tricep kickbacks, and core work are still fine.
+1. MILD pain (0-33): You MUST include exercises for the affected pain area, but keep the sets and reps low compared to the standard baseline.
+2. MODERATE pain (34-66): Reduce the sets and reps even further than mild pain, AND strictly decrease the total number of exercises targeting that area throughout the entire 7-day schedule. Use low-impact alternatives.
+3. SEVERE pain (67-100): TOTALLY REMOVE any exercises that majorly put effort or load on that specific pain area. Exclude them entirely.
 4. NEVER skip an entire muscle group for the whole week unless the pain is SEVERE and every exercise for that group directly loads the affected joint.
 ${exercisesStr}
 EXERCISE DATABASE INSTRUCTIONS:
@@ -106,6 +107,9 @@ DIET REQUIREMENTS:
 - Provide exactly 4 meals per day (Breakfast, Lunch, Snack, Dinner).
 - Each meal MUST include an "ingredients" field with EXPLICIT quantities. Example: "50g rolled oats, 200ml whole milk, 1 medium banana (sliced), 10g honey, 15g almonds".
 - Tailor calorie distribution and macros to the user's goal (${goal || "general fitness"}) and diet preference (${dietClass || "balanced"}).
+- CRITICAL REGIONAL DIET STRICTNESS: The diet MUST exclusively consist of traditional and culturally authentic dishes native to ${country || "Global"}.
+- ABSOLUTELY NO out-of-region ingredients or generic fitness substitutes. For example, if the country is India, do NOT use Tofu, Edamame, or Quinoa; instead use Paneer, Lentils (Dal), Chickpeas (Chana), or Rice. Apply this strict regional ingredient mapping for whatever country is selected.
+- Format the meals to fit the user's macros but NEVER compromise the authentic cultural identity of the cuisine.
 - Vary meals across the week — avoid repeating the same dish on consecutive days.
 
 You MUST return the output ONLY as a JSON object following this EXACT schema:

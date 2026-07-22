@@ -197,11 +197,12 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
         body: JSON.stringify({
           age: payload.stats?.age || 25,
           weight: payload.stats?.weightKg || 70,
-          goal: 'muscle',
+          goal: payload.stats?.goal || 'general fitness',
           dietClass: payload.stats?.diet || 'balanced',
           activityRank: payload.activityRank || 'beginner',
           bodyConstraints: selectedConstraints,
-          painIntensities: payload.painIntensities || {}
+          painIntensities: payload.painIntensities || {},
+          country: payload.account?.country || 'Unknown'
         })
       });
       const result = await response.json();
