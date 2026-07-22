@@ -224,7 +224,7 @@ export default function LoginPage({ onSubmit }) {
         </div>
 
         <button
-          className="bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg py-3 px-4 font-semibold transition-colors flex items-center justify-center gap-3"
+          className="bg-[var(--glass-bg)] hover:bg-[var(--card-hover-bg)] border border-[var(--glass-border)] text-[var(--color-text)] rounded-lg py-3 px-4 font-semibold transition-colors flex items-center justify-center gap-3"
           onClick={handleGoogleAuth}
           disabled={loading}
         >

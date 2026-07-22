@@ -896,12 +896,12 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--input-bg);
   border-radius: 999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--accent-border);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -967,7 +967,7 @@
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: var(--accent-border) transparent;
 }
 
 .heatmap-svg {
