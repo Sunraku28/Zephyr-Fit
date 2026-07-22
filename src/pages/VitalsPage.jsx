@@ -102,7 +102,7 @@ export default function VitalsPage({ stats, setStats, onNext, onBack, xp, userna
         </div>
       </div>
 
-      <button className="cta-button max-w-[400px] mt-[34px]" onClick={onNext}>Continue &#8594;</button>
+      <button className="cta-button max-w-[400px] mt-[34px]" disabled={!stats.goal} onClick={onNext}>Continue &#8594;</button>
     </div>
   );
 }

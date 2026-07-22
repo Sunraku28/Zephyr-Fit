@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../firebase';
 
-export const STAGE_ORDER = ['login', 'vitals', 'fuel', 'rank', 'map', 'dashboard'];
-export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, map: 400, dashboard: 500 };
+export const STAGE_ORDER = ['login', 'vitals', 'fuel', 'rank', 'schedule', 'map', 'dashboard'];
+export const XP_MAP = { login: 0, vitals: 100, fuel: 200, rank: 300, schedule: 400, map: 500, dashboard: 600 };
 
 export function useOnboarding() {
   const [stage, setStage] = useState('login');
@@ -11,7 +11,7 @@ export function useOnboarding() {
 
   const [payload, setPayload] = useState({
     account: { username: '', profilePic: 'default.png', profileFrame: 'none', uid: null },
-    stats: { age: 21, weightKg: 75, diet: null, goal: null },
+    stats: { age: 21, weightKg: 75, diet: null, goal: null, workoutDays: 3, equipment: null },
     activityRank: null,
     bodyConstraints: [],
     painIntensities: {},
@@ -36,6 +36,14 @@ export function useOnboarding() {
 
   const setRank = (val) => {
     setPayload(p => ({ ...p, activityRank: val }));
+  };
+
+  const setWorkoutDays = (val) => {
+    setPayload(p => ({ ...p, stats: { ...p.stats, workoutDays: val } }));
+  };
+
+  const setEquipment = (val) => {
+    setPayload(p => ({ ...p, stats: { ...p.stats, equipment: val } }));
   };
 
   const toggleJoint = (joint) => {
@@ -98,6 +106,8 @@ export function useOnboarding() {
           goal: payload.stats.goal,
           dietClass: payload.stats.diet,
           activityRank: payload.activityRank,
+          workoutDays: payload.stats.workoutDays,
+          equipment: payload.stats.equipment,
           bodyConstraints: payload.bodyConstraints,
           painIntensities: painIntensities,
         })
@@ -124,7 +134,7 @@ export function useOnboarding() {
   const restart = () => {
     setPayload({
       account: { username: '', profilePic: 'default.png', profileFrame: 'none' },
-      stats: { age: 21, weightKg: 75, diet: null, goal: null },
+      stats: { age: 21, weightKg: 75, diet: null, goal: null, workoutDays: 3, equipment: null },
       activityRank: null,
       bodyConstraints: [],
       painIntensities: {},
@@ -142,6 +152,8 @@ export function useOnboarding() {
     setStats,
     setDiet,
     setRank,
+    setWorkoutDays,
+    setEquipment,
     toggleJoint,
     setProfileAssets,
     goTo,

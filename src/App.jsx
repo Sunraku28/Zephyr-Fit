@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import VitalsPage from './pages/VitalsPage';
 import FuelPage from './pages/FuelPage';
 import RankPage from './pages/RankPage';
+import SchedulePage from './pages/SchedulePage';
 import MapPage from './pages/MapPage';
 import DashboardPage from './pages/DashboardPage';
 
@@ -20,6 +21,8 @@ export default function App() {
     setStats,
     setDiet,
     setRank,
+    setWorkoutDays,
+    setEquipment,
     toggleJoint,
     setProfileAssets,
     goTo,
@@ -43,7 +46,18 @@ export default function App() {
   } else if (stage === 'fuel') {
     page = <FuelPage diet={payload.stats.diet} setDiet={setDiet} onNext={() => goTo('rank')} onBack={goBack} xp={xp} username={payload.account.username} />;
   } else if (stage === 'rank') {
-    page = <RankPage rank={payload.activityRank} setRank={setRank} onNext={() => goTo('map')} onBack={goBack} xp={xp} username={payload.account.username} />;
+    page = <RankPage rank={payload.activityRank} setRank={setRank} onNext={() => goTo('schedule')} onBack={goBack} xp={xp} username={payload.account.username} />;
+  } else if (stage === 'schedule') {
+    page = <SchedulePage 
+      workoutDays={payload.stats.workoutDays} 
+      setWorkoutDays={setWorkoutDays} 
+      equipment={payload.stats.equipment}
+      setEquipment={setEquipment}
+      onNext={() => goTo('map')} 
+      onBack={goBack} 
+      xp={xp} 
+      username={payload.account.username} 
+    />;
   } else if (stage === 'map') {
     page = (
       <div className="relative w-full h-full">

@@ -18,7 +18,7 @@ app.get('/test-ai', async (req, res) => {
         console.log("Asking Gemini a question...");
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash',
+            model: 'gemini-3.6-flash',
             contents: 'Give me one short, inspiring quote about fitness.',
         });
 
@@ -31,7 +31,7 @@ app.get('/test-ai', async (req, res) => {
 
 app.post('/api/generate-plan', async (req, res) => {
     try {
-        const { age, weight, goal, dietClass, activityRank, bodyConstraints, painIntensities } = req.body;
+        const { age, weight, goal, dietClass, activityRank, workoutDays, equipment, bodyConstraints, painIntensities } = req.body;
         
         console.log("Received plan request:", req.body);
 
@@ -72,6 +72,12 @@ USER PROFILE:
 BODY CONSTRAINTS:
 ${painContext}
 
+EQUIPMENT AVAILABILITY:
+- The user has access to: ${equipment || 'Not specified'}.
+- "full_gym": Access to machines, barbells, dumbbells, cables.
+- "dumbbells_bands": Only basic home gym setup (dumbbells, resistance bands, bodyweight).
+- "no_equipment": Bodyweight only. No weights or machines.
+
 PAIN-AWARE EXERCISE SELECTION RULES (CRITICAL):
 1. MILD pain (0-33): Include most exercises for the affected area. Prefer lighter variations and reduce sets/reps slightly. Do NOT exclude the muscle group.
 2. MODERATE pain (34-66): Substitute with low-activation alternatives that minimize stress on the affected joint. For example, if the user has moderate shoulder pain, avoid heavy overhead pressing but still include exercises like lateral raises with light weight, face pulls, or band pull-aparts. Do NOT exclude all upper body movements.
@@ -81,6 +87,7 @@ ${exercisesStr}
 EXERCISE DATABASE INSTRUCTIONS:
 - Select ALL workout exercises EXCLUSIVELY from the exercise database above. Do NOT invent exercises.
 - Respect the "contraindications" field: cross-reference each exercise's contraindications with the user's body constraints and their severity level.
+- Ensure chosen exercises match the user's EQUIPMENT AVAILABILITY constraint.
 - Use the exercise's "baseline_sets" and "baseline_reps" as starting points, then adjust based on pain severity and activity level.
 - Match exercises to the user's activity rank using the "ranks" field.
 
@@ -91,7 +98,7 @@ SCHEDULE VARIETY RULES (CRITICAL):
 - Vary diet meals across the week too — do not repeat the same breakfast every day.
 
 WORKOUT REQUIREMENTS:
-- Provide exactly 5 exercises per workout day (3 exercises on rest/recovery days — mobility and stretching only).
+- Provide exactly ${workoutDays || 5} workout days per week with 5 exercises each. The remaining ${7 - (workoutDays || 5)} days should be rest/recovery days with 3 mobility/stretching exercises only.
 - Each exercise MUST include "sets" (number) and "reps" (number or string like "30 sec hold").
 - Adjust sets and reps based on the user's activity level and any pain constraints.
 
@@ -135,7 +142,7 @@ You MUST return the output ONLY as a JSON object following this EXACT schema:
 }`;
         
         const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash',
+            model: 'gemini-3.6-flash',
             contents: prompt,
             config: {
                 responseMimeType: "application/json"

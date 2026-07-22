@@ -17,6 +17,7 @@ export default function LoginPage({ onSubmit }) {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ export default function LoginPage({ onSubmit }) {
 
   const validE = email.includes('@');
   const validP = password.length >= 6;
-  const validName = firstName.trim().length > 0 && lastName.trim().length > 0;
+  const validName = firstName.trim().length > 0 && lastName.trim().length > 0 && country.trim().length > 0;
 
   const ready = isRegister
     ? validE && validP && validName && !loading
@@ -88,6 +89,7 @@ export default function LoginPage({ onSubmit }) {
           username: fullName,
           firstName: firstNameVal,
           lastName: lastNameVal,
+          country: country.trim(),
           profilePic: profilePic,
           profileFrame: 'none',
           uid: user.uid
@@ -180,6 +182,18 @@ export default function LoginPage({ onSubmit }) {
               />
               <label htmlFor="lastName">Last Name</label>
             </div>
+          </div>
+        )}
+        {isRegister && (
+          <div className="field">
+            <input
+              id="country"
+              type="text"
+              value={country}
+              onChange={e => setCountry(e.target.value)}
+              className={(country ? 'has-val' : '')}
+            />
+            <label htmlFor="country">Country</label>
           </div>
         )}
 
