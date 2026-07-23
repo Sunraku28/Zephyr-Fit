@@ -111,6 +111,7 @@ export function useOnboarding() {
           bodyConstraints: payload.bodyConstraints,
           painIntensities: painIntensities,
           country: payload.account?.country,
+          level: 1
         })
       });
       const result = await response.json();

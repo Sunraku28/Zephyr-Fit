@@ -177,8 +177,56 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
   };
 
   const toggleDietTask = (id) => toggleWeeklyTask('diet', currentDay, id);
-  const toggleWorkoutTask = (id) => toggleWeeklyTask('workout', currentDay, id);
+  
+  const toggleWorkoutTask = (id) => {
+    const todayStr = toLocalDateStr(new Date());
+    const tasksForDay = weeklyTasks.workout[currentDay] || [];
+    const taskIndex = tasksForDay.findIndex(t => t.id === id);
+    if (taskIndex === -1) return;
+    const task = tasksForDay[taskIndex];
+    const isNowDone = !task.done;
+    
+    // Determine XP for this task
+    let xpValue = 1; // normal exercise
+    const sets = parseInt(task.sets) || 0;
+    const reps = parseInt(task.reps) || 0;
+    if (sets >= 4 || reps >= 12 || (sets * reps) > 30) {
+      xpValue = 2; // hard exercise
+    }
 
+    if (setPayload) {
+      setPayload(p => {
+        let currentXp = p.xp || 0;
+        let xpHistory = p.xpHistory || {};
+        let todayXp = xpHistory[todayStr] || 0;
+        
+        const totalTasksForDay = tasksForDay.length;
+        const maxDailyXp = totalTasksForDay > 4 ? 6 : 4;
+        
+        if (isNowDone) {
+          // Gaining XP
+          if (todayXp < maxDailyXp) {
+            const xpToAdd = Math.min(xpValue, maxDailyXp - todayXp);
+            currentXp += xpToAdd;
+            todayXp += xpToAdd;
+          }
+        } else {
+          // Losing XP
+          const xpToSubtract = Math.min(xpValue, todayXp);
+          currentXp = Math.max(0, currentXp - xpToSubtract);
+          todayXp = Math.max(0, todayXp - xpToSubtract);
+        }
+        
+        return {
+          ...p,
+          xp: currentXp,
+          xpHistory: { ...xpHistory, [todayStr]: todayXp }
+        };
+      });
+    }
+
+    toggleWeeklyTask('workout', currentDay, id);
+  };
   const toggleJointSelection = (joint) => {
     setSelectedConstraints(prev => 
       prev.includes(joint.constraintId) 
@@ -201,6 +249,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
           dietClass: payload.stats?.diet || 'balanced',
           activityRank: payload.activityRank || 'beginner',
           bodyConstraints: selectedConstraints,
+          level: Math.floor((payload.xp || 0) / 100) + 1,
           painIntensities: payload.painIntensities || {},
           country: payload.account?.country || 'Unknown'
         })
@@ -226,7 +275,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
   };
 
   return (
-    <div className="w-full h-screen flex relative z-10 p-4 md:p-6 gap-6 box-border max-w-[1200px] mx-auto">
+    <div className="w-full h-screen flex relative z-10 p-4 md:p-6 gap-6 box-border">
       {/* Badge Celebration Overlay */}
       {celebratingBadge && (
         <BadgeCelebration badge={celebratingBadge} onClose={() => setCelebratingBadge(null)} />
@@ -274,9 +323,37 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
       <main className="flex-1 flex flex-col h-[calc(100vh-48px)] overflow-hidden rounded-3xl">
         {/* Header */}
         <header className="relative z-50 flex justify-between items-center mb-6 glass border border-glass-border rounded-3xl p-4 px-7 shadow-lg">
-          <div>
-            <h1 className="text-[26px] font-extrabold text-text tracking-tight">Dashboard</h1>
-            <p className="text-xs text-text-dim font-mono uppercase tracking-[0.2em] mt-1">Level 1 • {payload?.activityRank || 'Novice'}</p>
+          <div className="flex items-center gap-5">
+            {/* XP Circular Progress */}
+            <div className="relative flex items-center justify-center w-[52px] h-[52px]">
+              <svg className="absolute w-[52px] h-[52px] -rotate-90 pointer-events-none" viewBox="0 0 52 52">
+                {/* Background ring */}
+                <circle cx="26" cy="26" r="22" fill="transparent" stroke="var(--glass-border)" strokeWidth="4" />
+                {/* Progress ring */}
+                <circle 
+                  cx="26" cy="26" r="22" 
+                  fill="transparent" 
+                  stroke="#00e5ff" 
+                  strokeWidth="4"
+                  strokeDasharray={2 * Math.PI * 22}
+                  strokeDashoffset={(2 * Math.PI * 22) - (((payload?.xp || 0) % 100) / 100) * (2 * Math.PI * 22)}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000 ease-out"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(0, 229, 255, 0.7))' }}
+                />
+              </svg>
+              {/* Center Text (Level Number) */}
+              <span className="relative z-10 text-lg font-black text-text" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                {Math.floor((payload?.xp || 0) / 100) + 1}
+              </span>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-text leading-none mb-1.5">{username}</h2>
+              <p className="text-[10px] text-text-dim font-mono uppercase tracking-[0.2em]">
+                {payload?.activityRank || 'Novice'} • XP: {(payload?.xp || 0) % 100}/100
+              </p>
+            </div>
           </div>
           
           {/* User Avatar Customizer */}
@@ -289,42 +366,9 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
         </header>
 
         {activeTab === 'home' ? (
-          <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col gap-6 scrollbar-hide">
-            {/* Diet Section */}
-            <section className="glass rounded-3xl p-7 border border-glass-border">
-              <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
-                <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
-                  Diet 
-                </h2>
-                <span className="text-[10px] font-mono text-accent-base uppercase tracking-widest bg-accent-bg border border-accent-border/30 px-3 py-1.5 rounded-lg">
-                  {diet}
-                </span>
-              </div>
-              
-              <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-2 scrollbar-thin">
-                {(weeklyTasks.diet[currentDay] || []).map(task => (
-                  <label key={task.id} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
-                    <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleDietTask(task.id)} />
-                    <div className={`w-[22px] h-[22px] rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_10px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
-                      {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className={`text-[15px] font-medium transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
-                        {task.label}
-                      </span>
-                      {task.ingredients && (
-                        <span className={`text-[11px] leading-snug mt-1 transition-all ${task.done ? 'text-text-dimmer' : 'text-text-dim'}`}>
-                          {task.ingredients}
-                        </span>
-                      )}
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </section>
-
+          <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col xl:flex-row gap-6 scrollbar-hide">
             {/* Workout Section */}
-            <section className="glass rounded-3xl p-7 border border-glass-border">
+            <section className="glass rounded-3xl p-7 border border-glass-border flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                 <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                   Workout
@@ -334,20 +378,58 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                 </span>
               </div>
               
-              <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-2 scrollbar-thin">
+              <div className="flex flex-col gap-4 flex-1 overflow-y-auto pr-2 scrollbar-thin">
                 {(weeklyTasks.workout[currentDay] || []).map(task => (
-                  <label key={task.id} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
+                  <label key={task.id} className={`flex flex-1 items-center gap-6 p-6 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleWorkoutTask(task.id)} />
-                    <div className={`w-[22px] h-[22px] rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_10px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
+                    <div className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_12px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
                       {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
                     </div>
-                    <div className="flex flex-col">
-                      <span className={`text-[15px] font-medium transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
+                    <div className="flex flex-col justify-center">
+                      <div className="flex items-center gap-3">
+                        <span className={`text-lg font-bold mb-1 transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
+                          {task.label}
+                        </span>
+                        <span className="text-[10px] font-black text-accent-base bg-accent-bg px-2 py-0.5 rounded border border-accent-border/50 shadow-[0_0_10px_var(--accent-shadow)]">
+                          +{(parseInt(task.sets) >= 4 || parseInt(task.reps) >= 12 || (parseInt(task.sets) * parseInt(task.reps)) > 30) ? 2 : 1} XP
+                        </span>
+                      </div>
+                      {task.sets && task.reps && (
+                        <span className={`text-xs mt-2 font-mono uppercase tracking-widest transition-all ${task.done ? 'text-text-dimmer' : 'text-accent-base'}`}>
+                          {task.sets} sets × {task.reps}
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </section>
+
+            {/* Diet Section */}
+            <section className="glass rounded-3xl p-7 border border-glass-border flex-1 flex flex-col">
+              <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
+                <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
+                  Diet 
+                </h2>
+                <span className="text-[10px] font-mono text-accent-base uppercase tracking-widest bg-accent-bg border border-accent-border/30 px-3 py-1.5 rounded-lg">
+                  {diet}
+                </span>
+              </div>
+              
+              <div className="flex flex-col gap-4 flex-1 overflow-y-auto pr-2 scrollbar-thin">
+                {(weeklyTasks.diet[currentDay] || []).map(task => (
+                  <label key={task.id} className={`flex flex-1 items-center gap-6 p-6 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
+                    <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleDietTask(task.id)} />
+                    <div className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_12px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
+                      {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <span className={`text-lg font-bold mb-1 transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
                         {task.label}
                       </span>
-                      {task.sets && task.reps && (
-                        <span className={`text-[10px] mt-1 font-mono uppercase tracking-widest transition-all ${task.done ? 'text-text-dimmer' : 'text-accent-base'}`}>
-                          {task.sets} sets × {task.reps}
+                      {task.ingredients && (
+                        <span className={`text-sm leading-relaxed transition-all ${task.done ? 'text-text-dimmer' : 'text-text-dim'}`}>
+                          {task.ingredients}
                         </span>
                       )}
                     </div>
@@ -408,7 +490,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
 
                 {/* Day Content */}
                 <div className="flex-1 overflow-y-auto pr-2 pb-10">
-                  <section className="glass rounded-3xl p-7 border border-glass-border">
+                  <section className="glass rounded-3xl p-7 border border-glass-border min-h-full flex flex-col">
                     <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                       <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                         {selectedDay} {scheduleMode === 'diet' ? 'Meals' : 'Routine'}
@@ -418,21 +500,21 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                       </span>
                     </div>
                     
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4 flex-1">
                       {weeklyTasks[scheduleMode][selectedDay].map(task => (
-                        <div key={task.id} className="flex items-center gap-4 p-4 rounded-2xl border border-glass-border bg-glass-bg/30">
-                          <div className="w-[10px] h-[10px] rounded-full bg-accent-base shadow-[0_0_8px_var(--accent-shadow)]"></div>
-                          <div className="flex flex-col">
-                            <span className="text-[15px] font-medium text-text">
+                        <div key={task.id} className="flex flex-1 items-center gap-6 p-6 rounded-2xl border border-glass-border bg-glass-bg/30">
+                          <div className="w-3 h-3 shrink-0 rounded-full bg-accent-base shadow-[0_0_12px_var(--accent-shadow)]"></div>
+                          <div className="flex flex-col justify-center">
+                            <span className="text-lg font-bold text-text mb-1">
                               {task.label}
                             </span>
                             {scheduleMode === 'diet' && task.ingredients && (
-                              <span className="text-[11px] leading-snug mt-1 text-text-dim">
+                              <span className="text-sm leading-relaxed text-text-dim">
                                 {task.ingredients}
                               </span>
                             )}
                             {scheduleMode === 'workout' && task.sets && task.reps && (
-                              <span className="text-[10px] mt-1 font-mono uppercase tracking-widest text-accent-base">
+                              <span className="text-xs mt-2 font-mono uppercase tracking-widest text-accent-base">
                                 {task.sets} sets × {task.reps}
                               </span>
                             )}

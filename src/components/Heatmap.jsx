@@ -128,8 +128,8 @@ export default function Heatmap({ history = {} }) {
       {/* Grid */}
       <div className="heatmap-scroll">
         <svg
-          width={dayLabelWidth + weeks.length * (cellSize + gap) + 10}
-          height={7 * (cellSize + gap) + 30}
+          viewBox={`0 0 ${dayLabelWidth + weeks.length * (cellSize + gap) + 10} ${7 * (cellSize + gap) + 30}`}
+          style={{ width: '100%', height: 'auto', minWidth: '800px' }}
           className="heatmap-svg"
         >
           {/* Month labels */}
