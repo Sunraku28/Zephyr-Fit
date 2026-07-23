@@ -21,10 +21,7 @@ export default function BadgeCelebration({ badge, onClose }) {
     }));
     setSparkles(pts);
 
-    // Auto-close after 6 seconds
-    const timer = setTimeout(onClose, 6000);
-    return () => clearTimeout(timer);
-  }, [badge, onClose]);
+  }, [badge]);
 
   return (
     <AnimatePresence>

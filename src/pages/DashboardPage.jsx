@@ -249,7 +249,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
           dietClass: payload.stats?.diet || 'balanced',
           activityRank: payload.activityRank || 'beginner',
           bodyConstraints: selectedConstraints,
-          level: Math.floor((payload.xp || 0) / 100) + 1,
+          level: Math.floor((payload.xp || 0) / 10) + 1,
           painIntensities: payload.painIntensities || {},
           country: payload.account?.country || 'Unknown'
         })
@@ -336,7 +336,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                   stroke="#00e5ff" 
                   strokeWidth="4"
                   strokeDasharray={2 * Math.PI * 22}
-                  strokeDashoffset={(2 * Math.PI * 22) - (((payload?.xp || 0) % 100) / 100) * (2 * Math.PI * 22)}
+                  strokeDashoffset={(2 * Math.PI * 22) - (((payload?.xp || 0) % 10) / 10) * (2 * Math.PI * 22)}
                   strokeLinecap="round"
                   className="transition-all duration-1000 ease-out"
                   style={{ filter: 'drop-shadow(0 0 6px rgba(0, 229, 255, 0.7))' }}
@@ -344,14 +344,14 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
               </svg>
               {/* Center Text (Level Number) */}
               <span className="relative z-10 text-lg font-black text-text" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-                {Math.floor((payload?.xp || 0) / 100) + 1}
+                {Math.floor((payload?.xp || 0) / 10) + 1}
               </span>
             </div>
 
             <div>
               <h2 className="text-2xl font-bold text-text leading-none mb-1.5">{username}</h2>
               <p className="text-[10px] text-text-dim font-mono uppercase tracking-[0.2em]">
-                {payload?.activityRank || 'Novice'} • XP: {(payload?.xp || 0) % 100}/100
+                {payload?.activityRank || 'Novice'} • XP: {payload?.xp || 0}/{(Math.floor((payload?.xp || 0) / 10) + 1) * 10}
               </p>
             </div>
           </div>

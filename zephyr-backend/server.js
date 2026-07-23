@@ -34,7 +34,7 @@ app.post('/api/generate-plan', async (req, res) => {
         const { age, weight, goal, dietClass, activityRank, workoutDays, equipment, bodyConstraints, painIntensities, country, level } = req.body;
         const userLevel = level || 1;
         const baseExercises = 5;
-        const totalExercisesPerDay = baseExercises + (userLevel - 1);
+        const totalExercisesPerDay = baseExercises;
         
         console.log("Received plan request:", req.body);
 
@@ -103,7 +103,7 @@ SCHEDULE VARIETY RULES (CRITICAL):
 - Vary diet meals across the week too — do not repeat the same breakfast every day.
 
 WORKOUT REQUIREMENTS:
-- Provide exactly ${workoutDays || 5} workout days per week with ${totalExercisesPerDay} exercises each (Base 5 exercises + ${userLevel - 1} extra for being Level ${userLevel}). The remaining ${7 - (workoutDays || 5)} days should be rest/recovery days with 3 mobility/stretching exercises only.
+- Provide exactly ${workoutDays || 5} workout days per week with ${totalExercisesPerDay} exercises each. The remaining ${7 - (workoutDays || 5)} days should be rest/recovery days with 3 mobility/stretching exercises only.
 - Each exercise MUST include "sets" (number) and "reps" (number or string like "30 sec hold").
 - Adjust sets and reps based on the user's activity level and any pain constraints.
 
