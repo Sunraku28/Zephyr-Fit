@@ -366,7 +366,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
         </header>
 
         {activeTab === 'home' ? (
-          <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col xl:flex-row gap-6 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto xl:overflow-hidden pr-2 pb-10 flex flex-col xl:flex-row gap-6 scrollbar-hide">
             {/* Workout Section */}
             <section className="glass rounded-3xl p-7 border border-glass-border flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
@@ -383,7 +383,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                   <label key={task.id} className={`flex flex-1 items-center gap-6 p-6 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleWorkoutTask(task.id)} />
                     <div className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_12px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
-                      {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
+                      {task.done && <span className="text-void text-sm font-bold leading-none select-none">&#10003;</span>}
                     </div>
                     <div className="flex flex-col justify-center">
                       <div className="flex items-center gap-3">
@@ -421,7 +421,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
                   <label key={task.id} className={`flex flex-1 items-center gap-6 p-6 rounded-2xl cursor-pointer transition-all border ${task.done ? 'bg-glass-bg border-accent-border/30' : 'border-transparent hover:bg-glass-bg/50 hover:border-glass-border'}`}>
                     <input type="checkbox" className="hidden" checked={task.done} onChange={() => toggleDietTask(task.id)} />
                     <div className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center border-2 transition-all ${task.done ? 'bg-accent-base border-accent-base shadow-[0_0_12px_var(--accent-shadow)]' : 'border-text-dim hover:border-accent-base/50'}`}>
-                      {task.done && <span className="text-glass-bg text-sm font-bold leading-none select-none">&#10003;</span>}
+                      {task.done && <span className="text-void text-sm font-bold leading-none select-none">&#10003;</span>}
                     </div>
                     <div className="flex flex-col justify-center">
                       <span className={`text-lg font-bold mb-1 transition-all ${task.done ? 'text-text-dim line-through decoration-text-dimmer/50' : 'text-text'}`}>
