@@ -5,7 +5,8 @@ import { AVAILABLE_PROFILES, AVAILABLE_FRAMES } from '../../data/profileAssets';
 
 export default function ProfileCustomizer({ profilePic, profileFrame, setProfileAssets, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [view, setView] = useState('menu'); // 'menu' | 'customize'
+  const [view, setView] = useState('menu'); // 'menu' | 'customize' | 'theme'
+  const [theme, setTheme] = useState(() => localStorage.getItem('zephyr-theme') || 'light');
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef(null);
 
@@ -42,6 +43,11 @@ export default function ProfileCustomizer({ profilePic, profileFrame, setProfile
     setIsOpen(!isOpen);
     setView('menu');
   };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('zephyr-theme', theme);
+  }, [theme]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -85,6 +91,13 @@ export default function ProfileCustomizer({ profilePic, profileFrame, setProfile
                 Change Look
               </button>
               <button 
+                onClick={() => setView('theme')}
+                className="w-full text-left px-4 py-3 rounded-xl bg-glass-bg border border-transparent hover:border-glass-border hover:bg-glass-bg/50 transition-all font-bold text-text flex items-center gap-3"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                Theme
+              </button>
+              <button 
                 onClick={onLogout}
                 className="w-full text-left px-4 py-3 rounded-xl bg-glass-bg border border-transparent hover:border-red/30 hover:bg-red/10 transition-all font-bold text-red flex items-center gap-3"
               >
@@ -92,7 +105,7 @@ export default function ProfileCustomizer({ profilePic, profileFrame, setProfile
                 Log out
               </button>
             </div>
-          ) : (
+          ) : view === 'customize' ? (
             <div>
               <div className="mb-4">
                 <h3 className="text-text text-sm font-semibold mb-2 uppercase tracking-wider">Profile Picture</h3>
@@ -136,6 +149,54 @@ export default function ProfileCustomizer({ profilePic, profileFrame, setProfile
                       )}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => setView('menu')}
+                  className="w-1/3 py-2 border border-panel-border hover:bg-glass-bg text-text rounded-lg font-bold transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="flex-1 py-2 bg-mint hover:bg-opacity-80 text-void rounded-lg font-bold transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="mb-4">
+                <h3 className="text-text text-sm font-semibold mb-2 uppercase tracking-wider">Choose Theme</h3>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${theme === 'light' ? 'border-mint bg-mint/10' : 'border-panel-border hover:border-glass-border'}`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-md border border-gray-200">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-text">Beach</div>
+                      <div className="text-xs text-text-dim">Light Mode</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${theme === 'dark' ? 'border-mint bg-mint/10' : 'border-panel-border hover:border-glass-border'}`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-blue-400 shadow-md border border-slate-700">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-text">Euphoria</div>
+                      <div className="text-xs text-text-dim">Dark Mode</div>
+                    </div>
+                  </button>
                 </div>
               </div>
 
