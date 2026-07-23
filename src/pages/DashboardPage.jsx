@@ -368,7 +368,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
         {activeTab === 'home' ? (
           <div className="flex-1 overflow-y-auto xl:overflow-hidden pr-2 pb-10 flex flex-col xl:flex-row gap-6 scrollbar-hide">
             {/* Workout Section */}
-            <section className="glass rounded-3xl p-7 border border-glass-border flex-1 flex flex-col">
+            <section className="glass rounded-3xl p-6 border border-glass-border flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                 <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                   Workout
@@ -406,7 +406,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
             </section>
 
             {/* Diet Section */}
-            <section className="glass rounded-3xl p-7 border border-glass-border flex-1 flex flex-col">
+            <section className="glass rounded-3xl p-6 border border-glass-border flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                 <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                   Diet 
@@ -490,7 +490,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
 
                 {/* Day Content */}
                 <div className="flex-1 overflow-y-auto pr-2 pb-10">
-                  <section className="glass rounded-3xl p-7 border border-glass-border min-h-full flex flex-col">
+                  <section className="glass rounded-3xl p-6 border border-glass-border min-h-full flex flex-col">
                     <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                       <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                         {selectedDay} {scheduleMode === 'diet' ? 'Meals' : 'Routine'}
@@ -533,7 +533,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
              ════════════════════════════════════════════ */
           <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col gap-6 scrollbar-hide">
             {/* Heatmap Section */}
-            <section className="glass rounded-3xl p-7 border border-glass-border">
+            <section className="glass rounded-3xl p-6 border border-glass-border">
               <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                 <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -547,7 +547,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
             </section>
 
             {/* Trophy Case — Total Count Badges */}
-            <section className="glass rounded-3xl p-7 border border-glass-border">
+            <section className="glass rounded-3xl p-6 border border-glass-border">
               <div className="flex items-center justify-between mb-5 border-b border-glass-border pb-4">
                 <h2 className="text-xl font-extrabold text-text flex items-center gap-2">
                   🏆 Trophy Case
@@ -622,7 +622,7 @@ export default function DashboardPage({ payload, setPayload, onRestart, setProfi
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto pr-2 pb-10 flex flex-col gap-6 scrollbar-hide">
-            <section className="glass rounded-3xl p-7 border border-glass-border flex flex-col h-full">
+            <section className="glass rounded-3xl p-6 border border-glass-border flex flex-col h-full">
               <h2 className="text-xl font-extrabold text-text mb-2">Update Schedule</h2>
               <p className="text-text-dim text-sm mb-6">Log any new pain points or stiffness to adapt your workout schedule.</p>
               
